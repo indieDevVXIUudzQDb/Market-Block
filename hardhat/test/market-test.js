@@ -3,7 +3,7 @@ const { ethers } = require("hardhat");
 
 describe("Market", function () {
   it("Should create and execute market sales", async function () {
-    const Market = await ethers.getContractFactory("NFTMarket");
+    const Market = await ethers.getContractFactory("Market");
     const market = await Market.deploy();
     await market.deployed();
     const marketAddress = market.address;
@@ -13,8 +13,8 @@ describe("Market", function () {
     await nft.deployed();
     const nftContractAddress = nft.address;
 
-    const listingPrice = await market.getListingPrice().toString();
-
+    const listingPriceResult = await market.getListingPrice();
+    const listingPrice = listingPriceResult.toString();
     const auctionPrice = ethers.utils.parseUnits("100", "ether");
 
     await nft.createToken("https://www.mytokenlocation.com");
@@ -41,7 +41,7 @@ describe("Market", function () {
         const tokenUri = await i.tokenUri;
         return {
           price: i.price.toString(),
-          tokenId: i.id.toString(),
+          tokenId: i.tokenId.toString(),
           seller: i.seller,
           owner: i.owner,
           tokenUri,
