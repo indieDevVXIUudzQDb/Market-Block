@@ -37,8 +37,8 @@ describe("Market", function () {
       .connect(buyer)
       .createMarketSale(nftContractAddress, 1, { value: auctionPrice });
 
-    const itemResults = await market.fetchItemsCreated();
-    const items = itemResults.map((i) => {
+    let itemResults = await market.fetchItemsCreated();
+    let items = itemResults.map((i) => {
       // const tokenUri = await i.tokenUri;
       return {
         price: i.price.toString(),
@@ -53,6 +53,24 @@ describe("Market", function () {
       price: auctionPrice.toString(),
       seller: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
       owner: buyer.address,
+    });
+
+    itemResults = await market.fetchAvailableMarketItems();
+    items = itemResults.map((i) => {
+      // const tokenUri = await i.tokenUri;
+      return {
+        price: i.price.toString(),
+        tokenId: i.tokenId.toString(),
+        seller: i.seller,
+        owner: i.owner,
+      };
+    });
+    // console.log("items", items);
+    expect(items[0]).to.deep.equalInAnyOrder({
+      tokenId: "2",
+      price: auctionPrice.toString(),
+      seller: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+      owner: "0x0000000000000000000000000000000000000000",
     });
   });
 });
