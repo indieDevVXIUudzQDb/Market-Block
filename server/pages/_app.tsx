@@ -4,6 +4,7 @@ import { MantineProvider } from '@mantine/core'
 import { ThirdwebWeb3Provider } from '@3rdweb/hooks'
 
 import '../styles/globals.css'
+import { SITE_NAME } from '../utils/constants'
 
 export default function App(props: AppProps) {
   const { Component, pageProps } = props
@@ -14,7 +15,7 @@ export default function App(props: AppProps) {
   return (
     <>
       <Head>
-        <title>Page title</title>
+        <title>{SITE_NAME}</title>
         <meta
           name="viewport"
           content="minimum-scale=1, initial-scale=1, width=device-width"

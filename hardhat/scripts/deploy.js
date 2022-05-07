@@ -18,8 +18,7 @@ async function main() {
   console.log("nft deployed to:", nft.address);
 
   const content = `NEXT_PUBLIC_MARKET_CONTRACT_ADDRESS="${nftMarket.address}"\n
-  NEXT_PUBLIC_NFT_CONTRACT_ADDRESS="${nft.address}"\n
-  NEXT_PUBLIC_RPC_URL="http://127.0.0.1:8545/"`;
+  NEXT_PUBLIC_NFT_CONTRACT_ADDRESS="${nft.address}"\n`;
 
   try {
     fs.writeFileSync("../server/.env.local", content);

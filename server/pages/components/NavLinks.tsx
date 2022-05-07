@@ -70,7 +70,7 @@ export const NavLinks = () => {
       <MainLink
         label={'Sell Digital Asset'}
         icon={<BrowserPlus />}
-        to={'/'}
+        to={'/create-item'}
         color={'blue'}
       />
     </>

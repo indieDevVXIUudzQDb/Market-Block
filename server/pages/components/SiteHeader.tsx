@@ -5,7 +5,7 @@ import { useClipboard } from '@mantine/hooks'
 import { Wallet } from 'tabler-icons-react'
 import { addressShortener } from '../../utils/utils'
 import { toastConfig } from '../../utils/toastConfig'
-import { MARKET_NAME } from '../../utils/constants'
+import { SITE_NAME } from '../../utils/constants'
 import { NavLinks } from './NavLinks'
 
 export const SiteHeader = () => {
@@ -21,7 +21,7 @@ export const SiteHeader = () => {
       <Group position={'apart'}>
         <div></div>
         <div>
-          <Title className={'text-white'}>{MARKET_NAME}</Title>
+          <Title className={'text-white'}>{SITE_NAME}</Title>
         </div>
         {address ? (
           <Button
