@@ -31,4 +31,13 @@ module.exports = {
     // },
     // mainnet: {},
   },
+  paths: {
+    sources: "./contracts",
+    tests: "./test",
+    cache: "./cache",
+    artifacts: "../server/artifacts",
+  },
+  mocha: {
+    timeout: 40000,
+  },
 };

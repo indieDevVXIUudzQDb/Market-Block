@@ -4,7 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "npx hardhat test"
+    "test": "npx hardhat test",
+    "build": "npx hardhat compile",
+    "dev": "npx hardhat node",
+    "deployContracts": "node scripts/deploy.js"
   },
   "author": "",
   "license": "ISC",
