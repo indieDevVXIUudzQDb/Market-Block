@@ -1,5 +1,9 @@
-const { expect } = require("chai");
+const chai = require("chai");
 const { ethers } = require("hardhat");
+const deepEqualInAnyOrder = require("deep-equal-in-any-order");
+
+chai.use(deepEqualInAnyOrder);
+const { expect } = chai;
 
 describe("Market", function () {
   it("Should create and execute market sales", async function () {
@@ -27,27 +31,28 @@ describe("Market", function () {
       value: listingPrice,
     });
 
-    const [_, buyerAddress] = await ethers.getSigners();
+    const [_, buyer] = await ethers.getSigners();
 
     await market
-      .connect(buyerAddress)
+      .connect(buyer)
       .createMarketSale(nftContractAddress, 1, { value: auctionPrice });
 
-    const itemResults = await market.fetchMarketItems();
-    console.log("itemResults: ", itemResults);
-
-    const items = await Promise.all(
-      itemResults.map(async (i) => {
-        const tokenUri = await i.tokenUri;
-        return {
-          price: i.price.toString(),
-          tokenId: i.tokenId.toString(),
-          seller: i.seller,
-          owner: i.owner,
-          tokenUri,
-        };
-      })
-    );
-    console.log("items: ", items);
+    const itemResults = await market.fetchItemsCreated();
+    const items = itemResults.map((i) => {
+      // const tokenUri = await i.tokenUri;
+      return {
+        price: i.price.toString(),
+        tokenId: i.tokenId.toString(),
+        seller: i.seller,
+        owner: i.owner,
+      };
+    });
+    // console.log("items", items);
+    expect(items[0]).to.deep.equalInAnyOrder({
+      tokenId: "1",
+      price: auctionPrice.toString(),
+      seller: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+      owner: buyer.address,
+    });
   });
 });
