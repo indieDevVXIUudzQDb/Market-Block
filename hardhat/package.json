@@ -7,7 +7,7 @@
     "test": "npx hardhat test",
     "build": "npx hardhat compile",
     "dev": "npx hardhat node",
-    "deployContracts": "node scripts/deploy.js"
+    "deployContracts": "npx hardhat run scripts/deploy.js --network localhost"
   },
   "author": "",
   "license": "ISC",

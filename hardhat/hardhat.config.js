@@ -24,6 +24,7 @@ module.exports = {
   networks: {
     hardhat: {
       chainId: 1337,
+      name: "localhost",
     },
     // mumbai: {
     //   url: process.env.INFURA_POLYGON_MUMBAI_URL || "",

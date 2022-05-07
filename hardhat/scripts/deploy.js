@@ -7,17 +7,19 @@ const hre = require("hardhat");
 const fs = require("fs");
 
 async function main() {
-  const Market = await hre.ethers.getContractFactory("Market");
-  const market = await Market.deploy();
-  await market.deployed();
-  console.log("Market deployed to:", market.address);
+  const NFTMarket = await hre.ethers.getContractFactory("Market");
+  const nftMarket = await NFTMarket.deploy();
+  await nftMarket.deployed();
+  console.log("nftMarket deployed to:", nftMarket.address);
 
   const NFT = await hre.ethers.getContractFactory("NFT");
-  const nft = await NFT.deploy(market.address);
+  const nft = await NFT.deploy(nftMarket.address);
   await nft.deployed();
-  console.log("NFT deployed to:", nft.address);
+  console.log("nft deployed to:", nft.address);
 
-  const content = `NEXT_PUBLIC_MARKET_CONTRACT_ADDRESS="${market.address}"\nNEXT_PUBLIC_NFT_CONTRACT_ADDRESS="${nft.address}"`;
+  const content = `NEXT_PUBLIC_MARKET_CONTRACT_ADDRESS="${nftMarket.address}"\n
+  NEXT_PUBLIC_NFT_CONTRACT_ADDRESS="${nft.address}"\n
+  NEXT_PUBLIC_RPC_URL="http://127.0.0.1:8545/"`;
 
   try {
     fs.writeFileSync("../server/.env.local", content);

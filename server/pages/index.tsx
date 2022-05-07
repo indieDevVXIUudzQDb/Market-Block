@@ -5,7 +5,7 @@ import NFT from '../artifacts/contracts/NFT.sol/NFT.json'
 import Market from '../artifacts/contracts/MARKET.sol/Market.json'
 import { useEffect, useState } from 'react'
 import { ethers } from 'ethers'
-import { marketAddress, nftAddress } from '../utils/config'
+import { marketAddress, nftAddress, rpcURL } from '../utils/config'
 import axios from 'axios'
 import { Layout } from './Layout'
 import Web3Modal from 'web3modal'
@@ -14,55 +14,55 @@ export type LoadingState = 'not-loaded' | 'loaded'
 
 export interface MarketItem {
   price: string
-  tokenUri: string
-  tokenId: number
+  itemId: number
   seller: string
   owner: string
   image: string
   name: string
   description: string
 }
+
 const Home: NextPage = () => {
   const [marketItems, setMarketItems] = useState<MarketItem[]>([])
   const [loadingState, setLoadingState] = useState<LoadingState>('not-loaded')
 
   const loadMarketItems = async () => {
-    const provider = new ethers.providers.JsonRpcProvider()
+    const provider = new ethers.providers.JsonRpcProvider(rpcURL)
     const tokenContract = new ethers.Contract(nftAddress, NFT.abi, provider)
     const marketContract = new ethers.Contract(
       marketAddress,
       Market.abi,
       provider
     )
-
     const data = await marketContract.fetchAvailableMarketItems()
 
     const items = await Promise.all(
       data.map(
         async (i: {
-          tokenId: { toNumber: () => any }
+          tokenId: any
           price: { toString: () => ethers.BigNumberish }
-          seller: any
-          owner: any
+          itemId: { toNumber: () => number }
+          seller: string
+          owner: string
         }) => {
           const tokenUri = await tokenContract.tokenURI(i.tokenId)
           const meta = await axios.get(tokenUri)
-          const price = ethers.utils.formatUnits(i.price.toString(), 'ether')
-          const item: MarketItem = {
+          let price = ethers.utils.formatUnits(i.price.toString(), 'ether')
+          let item: MarketItem = {
             price,
-            tokenUri,
-            tokenId: i.tokenId.toNumber(),
-            seller: i.seller,
-            owner: i.owner,
-            image: meta.data.image,
-            name: meta.data.name,
-            description: meta.data.description,
+            itemId: i.itemId.toNumber() as number,
+            seller: i.seller as string,
+            owner: i.owner as string,
+            image: meta.data.image as string,
+            name: meta.data.name as string,
+            description: meta.data.description as string,
           }
           return item
         }
       )
     )
     setMarketItems(items)
+    setLoadingState('loaded')
   }
   useEffect(() => {
     loadMarketItems()
@@ -78,7 +78,7 @@ const Home: NextPage = () => {
     const price = ethers.utils.parseUnits(marketItem.price.toString(), 'ether')
     const transaction = await contract.createMarketSale(
       nftAddress,
-      marketItem.tokenId,
+      marketItem.itemId,
       {
         value: price,
       }
