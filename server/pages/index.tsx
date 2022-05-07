@@ -2,15 +2,14 @@ import type { NextPage } from 'next'
 import Head from 'next/head'
 import Image from 'next/image'
 import { AppShell, Header, Navbar } from '@mantine/core'
-import { CustomNavbar } from './components/CustomNavbar'
-import { CustomHeader } from './components/CustomHeader'
+import { NavLinks } from './components/NavLinks'
+import { SiteHeader } from './components/SiteHeader'
 
 const Home: NextPage = () => {
   return (
     <AppShell
       padding="md"
-      navbar={<CustomNavbar />}
-      header={<CustomHeader />}
+      header={<SiteHeader />}
       styles={(theme) => ({
         main: {
           backgroundColor:

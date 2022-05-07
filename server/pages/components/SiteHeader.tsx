@@ -6,13 +6,14 @@ import { Wallet } from 'tabler-icons-react'
 import { addressShortener } from '../../utils/utils'
 import { toastConfig } from '../../utils/toastConfig'
 import { MARKET_NAME } from '../../utils/constants'
+import { NavLinks } from './NavLinks'
 
-export const CustomHeader = () => {
+export const SiteHeader = () => {
   const { connectWallet, address, error } = useWeb3()
   const clipboard = useClipboard({ timeout: 500 })
 
   return (
-    <Header height={80} p="md">
+    <Header height={120} p="md">
       <div>
         <Toaster />
       </div>
@@ -33,10 +34,17 @@ export const CustomHeader = () => {
             <Wallet size={16} /> &nbsp; {addressShortener(address)}
           </Button>
         ) : (
-          <Button color={'indigo'} onClick={() => connectWallet('injected')}>
+          <Button
+            color={'blue'}
+            variant={'outline'}
+            onClick={() => connectWallet('injected')}
+          >
             Connect Wallet
           </Button>
         )}
+      </Group>
+      <Group className={'p-3'}>
+        <NavLinks />
       </Group>
     </Header>
   )
