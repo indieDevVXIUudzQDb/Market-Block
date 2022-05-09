@@ -1,5 +1,5 @@
 import type { NextPage } from 'next'
-import { Group } from '@mantine/core'
+import { Group, SimpleGrid } from '@mantine/core'
 
 import NFT from '../artifacts/contracts/NFT.sol/NFT.json'
 import Market from '../artifacts/contracts/MARKET.sol/Market.json'
@@ -9,6 +9,7 @@ import { marketAddress, nftAddress, rpcURL } from '../utils/config'
 import axios from 'axios'
 import { Layout } from './Layout'
 import Web3Modal from 'web3modal'
+import { MarketItemCard } from './components/MarketItemCard'
 
 export type LoadingState = 'not-loaded' | 'loaded'
 
@@ -92,14 +93,27 @@ const Home: NextPage = () => {
       {loadingState === 'loaded' && !marketItems.length ? (
         <p>No items available in the market</p>
       ) : loadingState === 'loaded' && marketItems.length ? (
-        <>
-          {marketItems.map((item: MarketItem) => (
-            <Group>
-              <p>{item.name}</p>
-              <button onClick={() => buyMarketItem(item)}>Buy</button>
-            </Group>
+        <SimpleGrid
+          cols={3}
+          spacing="lg"
+          breakpoints={[
+            { maxWidth: 980, cols: 2, spacing: 'md' },
+            { maxWidth: 755, cols: 1, spacing: 'sm' },
+            { maxWidth: 600, cols: 1, spacing: 'sm' },
+          ]}
+          style={{ marginLeft: '3em' }}
+        >
+          {marketItems.map((item: MarketItem, index) => (
+            <MarketItemCard
+              key={index}
+              id={item.itemId.toString()}
+              description={item.description}
+              image={item.image}
+              linkTo={`/item/${item.itemId}`}
+              title={item.name}
+            />
           ))}
-        </>
+        </SimpleGrid>
       ) : null}
       <div style={{ minHeight: '1000px' }}></div>
     </Layout>

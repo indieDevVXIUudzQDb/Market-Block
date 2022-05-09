@@ -5,6 +5,14 @@ export const addressShortener = (address: string) => {
   return `${start}…${end}`
 }
 
+export const textShortener = (text: string, maxLength: number) => {
+  if (text.length > maxLength) {
+    const start = text.substring(0, maxLength)
+    return `${start}…`
+  }
+  return text
+}
+
 export function readFileAsync(file: Blob): Promise<ArrayBuffer> {
   return new Promise((resolve, reject) => {
     let reader = new FileReader()
