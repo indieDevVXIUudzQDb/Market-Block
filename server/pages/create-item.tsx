@@ -22,22 +22,33 @@ import { Dropzone, DropzoneStatus, IMAGE_MIME_TYPE } from '@mantine/dropzone'
 
 import { ethers } from 'ethers'
 import { create as ipfsHttpClient } from 'ipfs-http-client'
-import { useRouter } from 'next/router'
 import Web3Modal from 'web3modal'
 import { NextPage } from 'next'
 import { Layout } from './Layout'
-import { ImportCandidate } from 'ipfs-core-types/src/utils'
-import { ipfsAPIURL, ipfsFileURL } from '../utils/config'
+import {
+  ipfsAPIURL,
+  ipfsFileURL,
+  marketAddress,
+  nftAddress,
+} from '../utils/config'
+import NFT from '../artifacts/contracts/NFT.sol/NFT.json'
+import Market from '../artifacts/contracts/MARKET.sol/Market.json'
+import { toast } from 'react-hot-toast'
+import { toastConfig } from '../utils/toastConfig'
+import { readFileAsync } from '../utils/utils'
 
 const client = ipfsHttpClient({ url: `${ipfsAPIURL}` })
 
 const CreateItem: NextPage = () => {
   const [uploadingImage, setUploadingImage] = useState(false)
   const [uploadingFiles, setUploadingFiles] = useState(false)
-  const [files, setFiles] = useState<ImportCandidate[]>([])
-  const [imageFile, setImageFile] = useState<ImportCandidate | null>()
+  const [files, setFiles] = useState<(Blob | MediaSource)[]>([])
+  const [imageFile, setImageFile] = useState<Blob | MediaSource | null>()
+  const [fileArrayBuffers, setFileArrayBuffers] = useState<ArrayBuffer[]>([])
+  const [imageArrayBuffer, setImageArrayBuffer] = useState<ArrayBuffer>(
+    new ArrayBuffer(0)
+  )
   const [imagePreview, setImagePreview] = useState<string | null>()
-  const router = useRouter()
   const theme = useMantineTheme()
 
   const form = useForm({
@@ -86,7 +97,6 @@ const CreateItem: NextPage = () => {
         style={{ color: getIconColor(status, theme) }}
         size={80}
       />
-
       <div>
         <Text size="xl" inline>
           Drag image here or click to select file
@@ -113,16 +123,28 @@ const CreateItem: NextPage = () => {
     </Group>
   )
 
-  const onDrop = async (droppedFiles: any, image: boolean) => {
+  const onDrop = async (
+    droppedFiles: (Blob | MediaSource)[],
+    image: boolean
+  ) => {
     console.log(files)
     if (image) {
-      await setImageFile(droppedFiles[0])
-      // @ts-ignore
-      setImagePreview(URL.createObjectURL(droppedFiles[0]))
+      const file = droppedFiles[0]
+      setImageFile(file)
+      const bytes = await readFileAsync(file as Blob)
+      setImageArrayBuffer(bytes)
+      setImagePreview(URL.createObjectURL(file))
     } else {
-      //TODO deletable files
       const addedFiles = [...files, ...droppedFiles]
-      await setFiles(addedFiles)
+      setFiles(addedFiles)
+      const fileByteArrays = await Promise.all(
+        droppedFiles.map(async (f) => {
+          const bytes = await readFileAsync(f as Blob)
+          return bytes
+        })
+      )
+      const addedFileArrayBuffers = [...fileArrayBuffers, ...fileByteArrays]
+      setFileArrayBuffers(addedFileArrayBuffers)
     }
   }
 
@@ -132,25 +154,24 @@ const CreateItem: NextPage = () => {
     price?: string
   }) => {
     const { name, description, price } = formValues
-
     try {
       // Image to IPFS
       await setUploadingImage(true)
-      const imageAdded = await client.add(imageFile as ImportCandidate, {
+      const imageAdded = await client.add(imageArrayBuffer, {
         progress: (p) => console.log(`Recieved: ${p}`),
       })
       await setUploadingImage(false)
       console.log({ imageAdded })
 
-      const image = `${ipfsFileURL}${imageAdded.path}`
+      const imageURL = `${ipfsFileURL}${imageAdded.cid}`
       await setUploadingFiles(true)
       const fileUrls = await Promise.all(
-        files?.map(async (f) => {
+        fileArrayBuffers?.map(async (f) => {
           const fileAdded = await client.add(f, {
             progress: (p) => console.log(`Recieved: ${p}`),
           })
           console.log({ fileAdded })
-          return `${ipfsFileURL}${fileAdded.path}`
+          return `${ipfsFileURL}${fileAdded.cid}`
         })
       )
       await setUploadingFiles(false)
@@ -159,17 +180,71 @@ const CreateItem: NextPage = () => {
         name,
         description,
         price,
-        image,
+        image: imageURL,
         files: fileUrls,
       }
       console.log({ data })
+
+      const dataAdded = await client.add(JSON.stringify(data), {
+        //TODO show progress modal
+        progress: (p) => console.log(`Recieved: ${p}`),
+      })
+      const ipfsURL = `${ipfsFileURL}${dataAdded.path}`
+      console.log({ ipfsURL })
+      createMarketItem(ipfsURL, price as string)
     } catch (e) {
       console.error(e)
     }
   }
 
-  // @ts-ignore
-  // @ts-ignore
+  const createMarketItem = async (url: string, salePrice: string) => {
+    try {
+      const web3Modal = new Web3Modal()
+      const connection = await web3Modal.connect()
+      const provider = new ethers.providers.Web3Provider(connection)
+      const signer = provider.getSigner()
+
+      // Create NFT
+      const contract = new ethers.Contract(nftAddress, NFT.abi, signer)
+      const nftTransaction = await contract.createToken(url)
+      const nftTx = await nftTransaction.wait()
+
+      const event = nftTx.events[0]
+      const value = event.args[2]
+      const tokenId = value.toNumber()
+      console.log({ tokenId, value })
+      //Create Market Item
+      const price = ethers.utils.parseUnits(salePrice, 'ether')
+      const marketContract = new ethers.Contract(
+        marketAddress,
+        Market.abi,
+        signer
+      )
+      const listPriceResult = await marketContract.getListingPrice()
+      const listingPrice = listPriceResult.toString()
+      console.log({ tokenId, price, listingPrice, salePrice })
+      const marketTransaction = await marketContract.createMarketItem(
+        nftAddress,
+        tokenId,
+        price,
+        { value: listingPrice }
+      )
+      await marketTransaction.wait()
+
+      toast.success('Market Item Created', toastConfig)
+      resetPage()
+    } catch (e) {
+      console.error(e)
+      toast.error('Something went wrong', toastConfig)
+    }
+  }
+  const resetPage = () => {
+    form.reset()
+    setFiles([])
+    setImagePreview(null)
+    setImageFile(null)
+  }
+
   return (
     <Layout>
       <Box sx={{ maxWidth: 800 }} mx="auto">
@@ -184,10 +259,13 @@ const CreateItem: NextPage = () => {
           <Text>
             Image <span className={'text-red-400'}>*</span>
           </Text>
-          {imageFile ? (
+          {imagePreview ? (
             <Group>
-              {/* @ts-ignore */}
-              {imageFile.name ? <Text>{imageFile.name}</Text> : null}
+              {/*@ts-ignore */}
+              {imageFile && imageFile.name ? (
+                // @ts-ignore
+                <Text>{imageFile.name}</Text>
+              ) : null}
               <ActionIcon
                 onClick={() => {
                   setImageFile(null)

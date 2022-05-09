@@ -4,3 +4,17 @@ export const addressShortener = (address: string) => {
   const end = address.substring(address.length - maxLength, address.length)
   return `${start}…${end}`
 }
+
+export function readFileAsync(file: Blob): Promise<ArrayBuffer> {
+  return new Promise((resolve, reject) => {
+    let reader = new FileReader()
+
+    reader.onload = () => {
+      resolve(reader.result as ArrayBuffer)
+    }
+
+    reader.onerror = reject
+
+    reader.readAsArrayBuffer(file)
+  })
+}
