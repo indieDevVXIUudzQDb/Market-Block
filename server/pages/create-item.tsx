@@ -9,6 +9,8 @@ import {
   useMantineTheme,
   MantineTheme,
   ActionIcon,
+  Space,
+  Progress,
 } from '@mantine/core'
 import {
   Upload,
@@ -40,6 +42,8 @@ import { readFileAsync } from '../utils/utils'
 const client = ipfsHttpClient({ url: `${ipfsAPIURL}` })
 
 const CreateItem: NextPage = () => {
+  const [uploadProgress, setUploadProgress] = useState<number>(0)
+  const [uploadFilename, setUploadFilename] = useState<string | null>(null)
   const [uploadingImage, setUploadingImage] = useState(false)
   const [uploadingFiles, setUploadingFiles] = useState(false)
   const [files, setFiles] = useState<(Blob | MediaSource)[]>([])
@@ -154,11 +158,27 @@ const CreateItem: NextPage = () => {
     price?: string
   }) => {
     const { name, description, price } = formValues
+    const fileCount = fileArrayBuffers.length + 1
     try {
       // Image to IPFS
       await setUploadingImage(true)
       const imageAdded = await client.add(imageArrayBuffer, {
-        progress: (p) => console.log(`Recieved: ${p}`),
+        progress: async (p) => {
+          // @ts-ignore
+          setUploadFilename(imageFile.name)
+          // @ts-ignore
+          let max = imageFile.size
+          // @ts-ignore
+          const updatedProgress = uploadProgress + (p / max) * 100
+
+          console.log({
+            p,
+            max,
+            updatedProgress,
+          })
+          await setUploadProgress(updatedProgress)
+          console.log(`Recieved: ${p}`)
+        },
       })
       await setUploadingImage(false)
       console.log({ imageAdded })
@@ -166,10 +186,29 @@ const CreateItem: NextPage = () => {
       const imageURL = `${ipfsFileURL}${imageAdded.cid}`
       await setUploadingFiles(true)
       const fileUrls = await Promise.all(
-        fileArrayBuffers?.map(async (f) => {
+        fileArrayBuffers?.map(async (f, index) => {
+          setUploadProgress(0)
           const fileAdded = await client.add(f, {
-            progress: (p) => console.log(`Recieved: ${p}`),
+            progress: async (p) => {
+              // @ts-ignore
+              let max = files[index].size
+              // @ts-ignore
+              setUploadFilename(files[index].name)
+
+              // @ts-ignore
+              const updatedProgress = uploadProgress + (p / max) * 100
+
+              console.log({
+                p,
+                max,
+                updatedProgress,
+              })
+              await setUploadProgress(updatedProgress)
+              console.log(`Recieved: ${p}`)
+            },
           })
+          await setUploadProgress(100)
+          setUploadFilename('Upload Complete')
           console.log({ fileAdded })
           return `${ipfsFileURL}${fileAdded.cid}`
         })
@@ -319,10 +358,22 @@ const CreateItem: NextPage = () => {
           >
             {(status) => dropzoneFileChildren(status, theme)}
           </Dropzone>
+          <Group grow={true} p={10}>
+            {uploadFilename ? (
+              <Progress
+                value={uploadProgress}
+                label={uploadFilename || ''}
+                size="xl"
+                radius="xl"
+                color={'violet'}
+              />
+            ) : null}
+          </Group>
           <Group position="right" mt="md">
             <Button type="submit">Submit</Button>
           </Group>
         </form>
+        <Space />
       </Box>
     </Layout>
   )
