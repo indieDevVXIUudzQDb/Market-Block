@@ -35,7 +35,7 @@ const Home: NextPage = () => {
       Market.abi,
       provider
     )
-    const data = await marketContract.fetchAvailableMarketItems()
+    const data = await marketContract.fetchMyMarketItems()
 
     const items = await Promise.all(
       data.map(
@@ -91,7 +91,7 @@ const Home: NextPage = () => {
   return (
     <Layout>
       {loadingState === 'loaded' && !marketItems.length ? (
-        <p>No assets available in the market</p>
+        <p>No assets owned</p>
       ) : loadingState === 'loaded' && marketItems.length ? (
         <SimpleGrid
           cols={3}
