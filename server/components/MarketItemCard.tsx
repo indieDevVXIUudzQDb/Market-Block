@@ -2,7 +2,7 @@ import React from 'react'
 
 import { Button, Card, Group, Image, Title } from '@mantine/core'
 import Link from 'next/link'
-import { textShortener } from '../../utils/utils'
+import { textShortener } from '../utils/utils'
 
 interface Props {
   id: string

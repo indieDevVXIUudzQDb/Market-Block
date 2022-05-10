@@ -3,9 +3,9 @@ import { useWeb3 } from '@3rdweb/hooks'
 import { toast, Toaster } from 'react-hot-toast'
 import { useClipboard } from '@mantine/hooks'
 import { Wallet } from 'tabler-icons-react'
-import { addressShortener } from '../../utils/utils'
-import { toastConfig } from '../../utils/toastConfig'
-import { SITE_NAME } from '../../utils/constants'
+import { addressShortener } from '../utils/utils'
+import { toastConfig } from '../utils/toastConfig'
+import { SITE_NAME } from '../utils/constants'
 import { NavLinks } from './NavLinks'
 
 export const SiteHeader = () => {

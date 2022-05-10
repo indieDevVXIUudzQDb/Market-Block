@@ -9,7 +9,7 @@ import { marketAddress, nftAddress, rpcURL } from '../utils/config'
 import axios from 'axios'
 import { Layout } from './Layout'
 import Web3Modal from 'web3modal'
-import { MarketItemCard } from './components/MarketItemCard'
+import { MarketItemCard } from '../components/MarketItemCard'
 
 export type LoadingState = 'not-loaded' | 'loaded'
 

@@ -1,4 +1,4 @@
-import { SiteHeader } from './components/SiteHeader'
+import { SiteHeader } from '../components/SiteHeader'
 import { BACKGROUND_URL } from '../utils/constants'
 import { AppShell } from '@mantine/core'
 
