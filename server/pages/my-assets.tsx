@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react'
 import { ethers } from 'ethers'
 import { marketAddress, nftAddress, rpcURL } from '../utils/config'
 import axios from 'axios'
-import { Layout } from './Layout'
+import { Layout } from '../components/Layout'
 import Web3Modal from 'web3modal'
 import { MarketItemCard } from '../components/MarketItemCard'
 

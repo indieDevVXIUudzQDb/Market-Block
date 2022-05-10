@@ -26,7 +26,7 @@ import { ethers } from 'ethers'
 import { create as ipfsHttpClient } from 'ipfs-http-client'
 import Web3Modal from 'web3modal'
 import { NextPage } from 'next'
-import { Layout } from './Layout'
+import { Layout } from '../components/Layout'
 import {
   ipfsAPIURL,
   ipfsFileURL,
