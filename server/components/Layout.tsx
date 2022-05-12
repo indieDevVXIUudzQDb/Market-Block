@@ -1,12 +1,13 @@
 import { SiteHeader } from '../components/SiteHeader'
 import { BACKGROUND_URL } from '../utils/constants'
 import { AppShell } from '@mantine/core'
+import { Web3State } from '../hooks/useWeb3State'
 
-export const Layout = (props: { children: any }) => {
+export const Layout = (props: { children: any; web3State: Web3State }) => {
   return (
     <AppShell
       padding="md"
-      header={<SiteHeader />}
+      header={<SiteHeader web3State={props.web3State} />}
       styles={(theme) => ({
         main: {
           backgroundColor:

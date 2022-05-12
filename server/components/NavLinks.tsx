@@ -18,7 +18,6 @@ import {
   BrowserCheck,
 } from 'tabler-icons-react'
 import Link from 'next/link'
-import { AddXyz } from '@3rdweb/chain-icons'
 import { useRouter } from 'next/router'
 
 interface MainLinkProps {

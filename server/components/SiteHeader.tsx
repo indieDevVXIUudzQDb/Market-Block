@@ -1,5 +1,4 @@
 import { Button, Group, Header, Title } from '@mantine/core'
-import { useWeb3 } from '@3rdweb/hooks'
 import { toast, Toaster } from 'react-hot-toast'
 import { useClipboard } from '@mantine/hooks'
 import { Wallet } from 'tabler-icons-react'
@@ -7,10 +6,11 @@ import { addressShortener } from '../utils/utils'
 import { toastConfig } from '../utils/toastConfig'
 import { SITE_NAME } from '../utils/constants'
 import { NavLinks } from './NavLinks'
+import { Web3State } from '../hooks/useWeb3State'
 
-export const SiteHeader = () => {
-  const { connectWallet, address, error } = useWeb3()
+export const SiteHeader = (props: { web3State: Web3State }) => {
   const clipboard = useClipboard({ timeout: 500 })
+  const { address, connectWallet } = props.web3State
 
   return (
     <Header height={120} p="md">
@@ -37,7 +37,7 @@ export const SiteHeader = () => {
           <Button
             color={'blue'}
             variant={'outline'}
-            onClick={() => connectWallet('injected')}
+            onClick={() => connectWallet()}
           >
             Connect Wallet
           </Button>

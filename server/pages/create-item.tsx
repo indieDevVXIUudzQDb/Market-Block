@@ -38,6 +38,7 @@ import Market from '../artifacts/contracts/MARKET.sol/Market.json'
 import { toast } from 'react-hot-toast'
 import { toastConfig } from '../utils/toastConfig'
 import { readFileAsync } from '../utils/utils'
+import { useWeb3State, Web3State } from '../hooks/useWeb3State'
 
 const client = ipfsHttpClient({ url: `${ipfsAPIURL}` })
 
@@ -54,6 +55,7 @@ const CreateItem: NextPage = () => {
   )
   const [imagePreview, setImagePreview] = useState<string | null>()
   const theme = useMantineTheme()
+  const web3State: Web3State = useWeb3State()
 
   const form = useForm({
     initialValues: {
@@ -225,10 +227,8 @@ const CreateItem: NextPage = () => {
 
   const createMarketItem = async (url: string, salePrice: string) => {
     try {
-      const web3Modal = new Web3Modal()
-      const connection = await web3Modal.connect()
-      const provider = new ethers.providers.Web3Provider(connection)
-      const signer = provider.getSigner()
+      // @ts-ignore
+      const signer = web3State.provider.getSigner()
 
       // Create NFT
       const contract = new ethers.Contract(nftAddress, NFT.abi, signer)
@@ -256,7 +256,7 @@ const CreateItem: NextPage = () => {
         { value: listingPrice }
       )
       await marketTransaction.wait()
-
+      console.log({ marketTransaction })
       toast.success('Market Item Created', toastConfig)
       resetPage()
     } catch (e) {
@@ -272,7 +272,7 @@ const CreateItem: NextPage = () => {
   }
 
   return (
-    <Layout>
+    <Layout web3State={web3State}>
       <Box sx={{ maxWidth: 800 }} mx="auto">
         <form onSubmit={form.onSubmit((values) => createItem(values))}>
           <TextInput required label="Name" {...form.getInputProps('name')} />

@@ -21,23 +21,18 @@ export default function App(props: AppProps) {
           content="minimum-scale=1, initial-scale=1, width=device-width"
         />
       </Head>
-      <ThirdwebWeb3Provider
-        supportedChainIds={supportedChainIds}
-        connectors={connectors}
+      <MantineProvider
+        withGlobalStyles
+        withNormalizeCSS
+        emotionOptions={{ key: 'mantine', prepend: false }}
+        theme={{
+          /** Put your mantine theme override here */
+          colorScheme: 'dark',
+          headings: { fontFamily: 'Russo One, sans-serif' },
+        }}
       >
-        <MantineProvider
-          withGlobalStyles
-          withNormalizeCSS
-          emotionOptions={{ key: 'mantine', prepend: false }}
-          theme={{
-            /** Put your mantine theme override here */
-            colorScheme: 'dark',
-            headings: { fontFamily: 'Russo One, sans-serif' },
-          }}
-        >
-          <Component {...pageProps} />
-        </MantineProvider>
-      </ThirdwebWeb3Provider>
+        <Component {...pageProps} />
+      </MantineProvider>
     </>
   )
 }

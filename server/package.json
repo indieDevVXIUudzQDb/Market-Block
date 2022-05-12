@@ -6,7 +6,6 @@
     "start": "next start"
   },
   "dependencies": {
-    "@3rdweb/hooks": "^1.9.2",
     "@mantine/core": "^4.2.2",
     "@mantine/dropzone": "^4.2.2",
     "@mantine/form": "^4.2.2",

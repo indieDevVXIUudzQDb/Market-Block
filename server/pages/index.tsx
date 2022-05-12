@@ -10,6 +10,7 @@ import axios from 'axios'
 import { Layout } from '../components/Layout'
 import Web3Modal from 'web3modal'
 import { MarketItemCard } from '../components/MarketItemCard'
+import { useWeb3State, Web3State } from '../hooks/useWeb3State'
 
 export type LoadingState = 'not-loaded' | 'loaded'
 
@@ -26,6 +27,7 @@ export interface MarketItem {
 const Home: NextPage = () => {
   const [marketItems, setMarketItems] = useState<MarketItem[]>([])
   const [loadingState, setLoadingState] = useState<LoadingState>('not-loaded')
+  const web3State: Web3State = useWeb3State()
 
   const loadMarketItems = async () => {
     const provider = new ethers.providers.JsonRpcProvider(rpcURL)
@@ -58,6 +60,7 @@ const Home: NextPage = () => {
             name: meta.data.name as string,
             description: meta.data.description as string,
           }
+          console.log({ items })
           return item
         }
       )
@@ -89,7 +92,7 @@ const Home: NextPage = () => {
   }
 
   return (
-    <Layout>
+    <Layout web3State={web3State}>
       {loadingState === 'loaded' && !marketItems.length ? (
         <p>No assets available in the market</p>
       ) : loadingState === 'loaded' && marketItems.length ? (
