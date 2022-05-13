@@ -24,7 +24,6 @@ import { Dropzone, DropzoneStatus, IMAGE_MIME_TYPE } from '@mantine/dropzone'
 
 import { ethers } from 'ethers'
 import { create as ipfsHttpClient } from 'ipfs-http-client'
-import Web3Modal from 'web3modal'
 import { NextPage } from 'next'
 import { Layout } from '../components/Layout'
 import {
@@ -39,6 +38,7 @@ import { toast } from 'react-hot-toast'
 import { toastConfig } from '../utils/toastConfig'
 import { readFileAsync } from '../utils/utils'
 import { useWeb3State, Web3State } from '../hooks/useWeb3State'
+import { CURRENCY_NAME } from '../utils/constants'
 
 const client = ipfsHttpClient({ url: `${ipfsAPIURL}` })
 
@@ -160,6 +160,7 @@ const CreateItem: NextPage = () => {
   }) => {
     const { name, description, price } = formValues
     const fileCount = fileArrayBuffers.length + 1
+    let signer
     try {
       // @ts-ignore
       try {
@@ -168,7 +169,7 @@ const CreateItem: NextPage = () => {
         signer = web3State.provider.getSigner()
         signer.getAddress()
       } catch (e) {
-        throw new Error('Wallet not ready or available')
+        throw new Error('Wallet not ready or not available')
       }
       // Image to IPFS
       await setUploadingImage(true)
@@ -228,7 +229,6 @@ const CreateItem: NextPage = () => {
       const data = {
         name,
         description,
-        price,
         image: imageURL,
         files: fileUrls,
       }
@@ -243,7 +243,7 @@ const CreateItem: NextPage = () => {
       createMarketItem(ipfsURL, price as string)
     } catch (e) {
       // @ts-ignore
-      if (e.message === 'Wallet not ready or available') {
+      if (e.message === 'Wallet not ready or not available') {
         // @ts-ignore
         toast.error(e.message, toastConfig)
       }
@@ -307,7 +307,12 @@ const CreateItem: NextPage = () => {
             label="Description"
             {...form.getInputProps('description')}
           />
-          <TextInput required label="Price" {...form.getInputProps('price')} />
+          <TextInput
+            required
+            label={`Asking Price (${CURRENCY_NAME})`}
+            type={'number'}
+            {...form.getInputProps('price')}
+          />
           <Text>
             Image <span className={'text-red-400'}>*</span>
           </Text>
