@@ -160,7 +160,6 @@ const CreateItem: NextPage = () => {
   }) => {
     const { name, description, price } = formValues
     const fileCount = fileArrayBuffers.length + 1
-    let signer
     try {
       // @ts-ignore
       try {
@@ -182,6 +181,11 @@ const CreateItem: NextPage = () => {
           // @ts-ignore
           const updatedProgress = uploadProgress + (p / max) * 100
 
+          console.log({
+            p,
+            max,
+            updatedProgress,
+          })
           await setUploadProgress(updatedProgress)
           console.log(`Recieved: ${p}`)
         },
@@ -203,12 +207,19 @@ const CreateItem: NextPage = () => {
 
               // @ts-ignore
               const updatedProgress = uploadProgress + (p / max) * 100
+
+              console.log({
+                p,
+                max,
+                updatedProgress,
+              })
               await setUploadProgress(updatedProgress)
               console.log(`Recieved: ${p}`)
             },
           })
           await setUploadProgress(100)
           setUploadFilename('Upload Complete')
+          console.log({ fileAdded })
           return `${ipfsFileURL}${fileAdded.cid}`
         })
       )
