@@ -160,7 +160,17 @@ const CreateItem: NextPage = () => {
   }) => {
     const { name, description, price } = formValues
     const fileCount = fileArrayBuffers.length + 1
+    let signer
     try {
+      // @ts-ignore
+      try {
+        await web3State.connectWallet()
+        // @ts-ignore
+        signer = web3State.provider.getSigner()
+        signer.getAddress()
+      } catch (e) {
+        throw new Error('Wallet not ready or available')
+      }
       // Image to IPFS
       await setUploadingImage(true)
       const imageAdded = await client.add(imageArrayBuffer, {
@@ -221,6 +231,11 @@ const CreateItem: NextPage = () => {
       console.log({ ipfsURL })
       createMarketItem(ipfsURL, price as string)
     } catch (e) {
+      // @ts-ignore
+      if (e.message === 'Wallet not ready or available') {
+        // @ts-ignore
+        toast.error(e.message, toastConfig)
+      }
       console.error(e)
     }
   }
