@@ -32,6 +32,7 @@ export const useWeb3State = (): Web3State => {
       setExistingConnection(true)
       const prov = new ethers.providers.Web3Provider(conn)
       setProvider(prov)
+      setConnected(true)
 
       console.log({ provider: prov })
       conn.on('accountsChanged', (accounts: string[]) => {
@@ -58,6 +59,7 @@ export const useWeb3State = (): Web3State => {
       console.log('Could not get a wallet connection', e)
       //Reset Connection
       setExistingConnection(false)
+      setConnected(false)
     }
   }
   useEffect(() => {

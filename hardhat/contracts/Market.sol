@@ -90,6 +90,10 @@ contract Market is ReentrancyGuard {
 
     }
 
+    function fetchMarketItem(uint256 itemId) public view returns (MarketItem memory){
+        return idToMarketItem[itemId];
+    }
+
     function fetchAvailableMarketItems() public view returns (MarketItem[] memory){
         uint itemCount = _itemIds.current();
         uint unsoldItemCount = _itemIds.current() - _itemsSold.current();
