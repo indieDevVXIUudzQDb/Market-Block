@@ -11,6 +11,8 @@ contract Market is ReentrancyGuard {
     using Counters for Counters.Counter;
     Counters.Counter private _itemIds;
     Counters.Counter private _itemsSold;
+    enum AvailabilityStatus{AVAILABLE, SOLD, CANCELLED}
+
 
     address payable owner;
     uint256 listingPrice = 0.025 ether;
@@ -25,7 +27,7 @@ contract Market is ReentrancyGuard {
         address payable owner;
         // TODO uint512
         uint256 price;
-        bool sold;
+        AvailabilityStatus status;
     }
 
     event MarketItemCreated (
@@ -72,7 +74,7 @@ contract Market is ReentrancyGuard {
             payable(msg.sender),
             payable(address(0)),
             price,
-            false
+            AvailabilityStatus.AVAILABLE
         );
         emit MarketItemCreated(itemId, nftContract, tokenId, msg.sender, address(0), price, false);
     }
@@ -83,17 +85,29 @@ contract Market is ReentrancyGuard {
     ) public payable nonReentrant {
         uint price = idToMarketItem[itemId].price;
         uint tokenId = idToMarketItem[itemId].tokenId;
-        require(idToMarketItem[itemId].sold  == false, "This item has already been sold");
+        require(idToMarketItem[itemId].status == AvailabilityStatus.AVAILABLE, "This item is not available");
         require(msg.value == price, "Please submit the asking price in order to complete the purchase");
 
         idToMarketItem[itemId].seller.transfer(msg.value);
         IERC721(nftContract).transferFrom(idToMarketItem[itemId].seller, msg.sender, tokenId);
         idToMarketItem[itemId].owner = payable(msg.sender);
-        idToMarketItem[itemId].sold = true;
+        idToMarketItem[itemId].status = AvailabilityStatus.SOLD;
         _itemsSold.increment();
         payable(owner).transfer(listingPrice);
 
     }
+
+    function cancelMarketItem(uint256 itemId) public {
+        require(owner == msg.sender, "Only marketplace owner can cancel a market listing.");
+        require(idToMarketItem[itemId].status == AvailabilityStatus.SOLD, "This item has already been sold");
+        require(idToMarketItem[itemId].status == AvailabilityStatus.CANCELLED, "This item sale has been cancelled");
+        uint tokenId = idToMarketItem[itemId].tokenId;
+        address nftContract = idToMarketItem[itemId].nftContract;
+        IERC721(nftContract).approve(address(0), tokenId);
+        idToMarketItem[itemId].status = AvailabilityStatus.CANCELLED;
+        // TODO cancel event
+    }
+
 
     function fetchMarketItem(uint256 itemId) public view returns (MarketItem memory){
         return idToMarketItem[itemId];
@@ -106,7 +120,7 @@ contract Market is ReentrancyGuard {
 
         MarketItem[] memory items = new MarketItem[](unsoldItemCount);
         for (uint i = 0; i < itemCount; i++) {
-            if (idToMarketItem[i + 1].owner == address(0)) {
+            if (idToMarketItem[i + 1].status == AvailabilityStatus.AVAILABLE) {
                 uint currentId = i + 1;
                 MarketItem storage currentItem = idToMarketItem[currentId];
                 items[currentIndex] = currentItem;
@@ -152,7 +166,7 @@ contract Market is ReentrancyGuard {
         MarketItem[] memory items = new MarketItem[](itemCount);
         for (uint i = 0; i < totalItemCount; i++) {
             if (idToMarketItem[i + 1].seller == msg.sender) {
-                uint currentId = i+1;
+                uint currentId = i + 1;
                 MarketItem storage currentItem = idToMarketItem[currentId];
                 items[currentIndex] = currentItem;
                 currentIndex += 1;
