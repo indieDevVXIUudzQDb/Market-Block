@@ -10,8 +10,7 @@ contract NFT is ERC721URIStorage {
     Counters.Counter private _tokenIds;
     address contractAddress;
 
-    constructor(address marketplaceAddress) ERC721("Market Block Tokens", "MBT"){
-        contractAddress = marketplaceAddress;
+    constructor() ERC721("Market Block Tokens", "MBT"){
     }
 
     function createToken(string memory tokenURI) public returns (uint){
@@ -20,7 +19,6 @@ contract NFT is ERC721URIStorage {
 
         _mint(msg.sender, newItemId);
         _setTokenURI(newItemId, tokenURI);
-        setApprovalForAll(contractAddress, true);
         return newItemId;
     }
 }

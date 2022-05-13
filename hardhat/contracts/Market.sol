@@ -15,9 +15,7 @@ contract Market is ReentrancyGuard {
     address payable owner;
     uint256 listingPrice = 0.025 ether;
 
-    constructor(){
-        owner = payable(msg.sender);
-    }
+    mapping(uint256 => MarketItem) private idToMarketItem;
 
     struct MarketItem {
         uint itemId;
@@ -30,8 +28,6 @@ contract Market is ReentrancyGuard {
         bool sold;
     }
 
-    mapping(uint256 => MarketItem) private idToMarketItem;
-
     event MarketItemCreated (
         uint indexed itemId,
         address indexed nftContract,
@@ -42,9 +38,19 @@ contract Market is ReentrancyGuard {
         bool sold
     );
 
+    constructor(){
+        owner = payable(msg.sender);
+    }
+
     function getListingPrice() public view returns (uint256){
         return listingPrice;
     }
+
+    function updateListingPrice(uint _listingPrice) public payable {
+        require(owner == msg.sender, "Only marketplace owner can update listing price.");
+        listingPrice = _listingPrice;
+    }
+
 
     function createMarketItem(
         address nftContract,
@@ -68,8 +74,6 @@ contract Market is ReentrancyGuard {
             price,
             false
         );
-
-        IERC721(nftContract).transferFrom(msg.sender, address(this), tokenId);
         emit MarketItemCreated(itemId, nftContract, tokenId, msg.sender, address(0), price, false);
     }
 
@@ -79,10 +83,11 @@ contract Market is ReentrancyGuard {
     ) public payable nonReentrant {
         uint price = idToMarketItem[itemId].price;
         uint tokenId = idToMarketItem[itemId].tokenId;
+        require(idToMarketItem[itemId].sold  == false, "This item has already been sold");
         require(msg.value == price, "Please submit the asking price in order to complete the purchase");
 
         idToMarketItem[itemId].seller.transfer(msg.value);
-        IERC721(nftContract).transferFrom(address(this), msg.sender, tokenId);
+        IERC721(nftContract).transferFrom(idToMarketItem[itemId].seller, msg.sender, tokenId);
         idToMarketItem[itemId].owner = payable(msg.sender);
         idToMarketItem[itemId].sold = true;
         _itemsSold.increment();
