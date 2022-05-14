@@ -106,7 +106,8 @@ contract Market is ReentrancyGuard {
     }
 
     function cancelMarketItem(uint256 itemId) public {
-        require(owner == msg.sender, "Only market owner can cancel a market listing.");
+        address seller = idToMarketItem[itemId].seller;
+        require( seller == msg.sender, "Only item seller can cancel a market listing.");
         require(idToMarketItem[itemId].status != AvailabilityStatus.SOLD, "This item has already been sold");
         require(idToMarketItem[itemId].status != AvailabilityStatus.CANCELLED, "This item sale has already been cancelled");
         uint256 tokenId = idToMarketItem[itemId].tokenId;
@@ -120,6 +121,32 @@ contract Market is ReentrancyGuard {
     function fetchMarketItem(uint256 itemId) public view returns (MarketItem memory){
         return idToMarketItem[itemId];
     }
+
+    function fetchMarketItemByTokenId(uint256 tokenId) public view returns (MarketItem memory){
+        uint totalItemCount = _itemIds.current();
+        uint itemCount = 0;
+        uint currentIndex = 0;
+
+        for (uint i = 0; i < totalItemCount; i++) {
+            if (idToMarketItem[i + 1].tokenId == tokenId) {
+                itemCount += 1;
+            }
+        }
+
+        MarketItem memory item;
+        // TODO reverse and return on first match
+        for (uint i = 0; i < totalItemCount; i++) {
+            if (idToMarketItem[i + 1].tokenId  == tokenId ) {
+                uint currentId = i + 1;
+                MarketItem storage currentItem = idToMarketItem[currentId];
+                // Only keep the most recent
+                item = currentItem;
+                currentIndex += 1;
+            }
+        }
+        return item;
+    }
+
 
     function fetchMarketItems() public view returns (MarketItem[] memory){
         uint totalItemCount = _itemIds.current();
