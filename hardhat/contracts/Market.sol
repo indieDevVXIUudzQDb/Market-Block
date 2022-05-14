@@ -11,6 +11,7 @@ contract Market is ReentrancyGuard {
     using Counters for Counters.Counter;
     Counters.Counter private _itemIds;
     Counters.Counter private _itemsSold;
+
     enum AvailabilityStatus{AVAILABLE, SOLD, CANCELLED}
 
     address payable owner;
@@ -114,14 +115,35 @@ contract Market is ReentrancyGuard {
         return idToMarketItem[itemId];
     }
 
-    function fetchAvailableMarketItems() public view returns (MarketItem[] memory){
-        uint itemCount = _itemIds.current();
-        uint unsoldItemCount = _itemIds.current() - _itemsSold.current();
+    function fetchMarketItems() public view returns (MarketItem[] memory){
+        uint totalItemCount = _itemIds.current();
         uint currentIndex = 0;
 
-        MarketItem[] memory items = new MarketItem[](unsoldItemCount);
-        for (uint i = 0; i < itemCount; i++) {
-            if (idToMarketItem[i + 1].status == AvailabilityStatus.AVAILABLE) {
+        MarketItem[] memory items = new MarketItem[](totalItemCount);
+        for (uint i = 0; i < totalItemCount; i++) {
+            uint currentId = i + 1;
+            MarketItem storage currentItem = idToMarketItem[currentId];
+            items[currentIndex] = currentItem;
+            currentIndex += 1;
+        }
+        return items;
+    }
+
+
+    function fetchMarketItemsByStatus(AvailabilityStatus status) public view returns (MarketItem[] memory){
+        uint totalItemCount = _itemIds.current();
+        uint itemCount = 0;
+        uint currentIndex = 0;
+
+        for (uint i = 0; i < totalItemCount; i++) {
+            if (idToMarketItem[i + 1].status == status) {
+                itemCount += 1;
+            }
+        }
+
+        MarketItem[] memory items = new MarketItem[](itemCount);
+        for (uint i = 0; i < totalItemCount; i++) {
+            if (idToMarketItem[i + 1].status == status) {
                 uint currentId = i + 1;
                 MarketItem storage currentItem = idToMarketItem[currentId];
                 items[currentIndex] = currentItem;
