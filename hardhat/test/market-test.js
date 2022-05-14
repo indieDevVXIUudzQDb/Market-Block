@@ -16,7 +16,7 @@ describe("Market", function () {
     const marketAddress = market.address;
 
     const NFT = await ethers.getContractFactory("NFT");
-    const nft = await NFT.deploy();
+    const nft = await NFT.deploy(marketAddress);
     await nft.deployed();
     const nftContractAddress = nft.address;
 
@@ -111,7 +111,7 @@ describe("Market", function () {
     const marketAddress = market.address;
 
     const NFT = await ethers.getContractFactory("NFT");
-    const nft = await NFT.deploy();
+    const nft = await NFT.deploy(marketAddress);
     await nft.deployed();
     const nftContractAddress = nft.address;
 
@@ -188,7 +188,7 @@ describe("Market", function () {
     const marketAddress = market.address;
 
     const NFT = await ethers.getContractFactory("NFT");
-    const nft = await NFT.deploy();
+    const nft = await NFT.deploy(marketAddress);
     await nft.deployed();
     const nftContractAddress = nft.address;
 
