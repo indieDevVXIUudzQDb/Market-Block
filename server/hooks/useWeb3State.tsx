@@ -34,7 +34,7 @@ export const useWeb3State = (): Web3State => {
       setProvider(prov)
       setConnected(true)
 
-      console.log({ provider: prov })
+      console.log({ provider: prov, address: conn.selectedAddress })
       conn.on('accountsChanged', (accounts: string[]) => {
         console.log(accounts)
         if (accounts.length > 0) setAddress(accounts[0].toString())

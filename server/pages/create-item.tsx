@@ -11,6 +11,7 @@ import {
   ActionIcon,
   Space,
   Progress,
+  Checkbox,
 } from '@mantine/core'
 import {
   Upload,
@@ -62,6 +63,7 @@ const CreateItem: NextPage = () => {
       name: 'Test',
       description: 'test description',
       price: '100',
+      listForSale: true,
     },
   })
   const getIconColor = (status: DropzoneStatus, theme: MantineTheme) => {
@@ -156,9 +158,10 @@ const CreateItem: NextPage = () => {
   const createItem = async (formValues: {
     name?: string
     description?: string
+    listForSale?: boolean
     price?: string
   }) => {
-    const { name, description, price } = formValues
+    const { name, description, price, listForSale } = formValues
     const fileCount = fileArrayBuffers.length + 1
     let signer
     try {
@@ -240,7 +243,20 @@ const CreateItem: NextPage = () => {
       })
       const ipfsURL = `${ipfsFileURL}${dataAdded.path}`
       console.log({ ipfsURL })
-      createMarketItem(ipfsURL, price as string)
+
+      // Create NFT
+      const contract = new ethers.Contract(nftAddress, NFT.abi, signer)
+      const nftTransaction = await contract.createToken(ipfsURL)
+      const nftTx = await nftTransaction.wait()
+
+      const event = nftTx.events[0]
+      const value = event.args[2]
+      const tokenId = value.toNumber()
+      console.log({ tokenId })
+      if (listForSale) {
+        // @ts-ignore
+        await createMarketItem(tokenId, price)
+      }
     } catch (e) {
       // @ts-ignore
       if (e.message === 'Wallet not ready or not available') {
@@ -251,20 +267,11 @@ const CreateItem: NextPage = () => {
     }
   }
 
-  const createMarketItem = async (url: string, salePrice: string) => {
+  const createMarketItem = async (tokenId: string, salePrice: string) => {
     try {
+      console.log('createMarketItem called', tokenId)
       // @ts-ignore
       const signer = web3State.provider.getSigner()
-
-      // Create NFT
-      const contract = new ethers.Contract(nftAddress, NFT.abi, signer)
-      const nftTransaction = await contract.createToken(url)
-      const nftTx = await nftTransaction.wait()
-
-      const event = nftTx.events[0]
-      const value = event.args[2]
-      const tokenId = value.toNumber()
-      // console.log({ tokenId, value })
       //Create Market Item
       const price = ethers.utils.parseUnits(salePrice, 'ether')
       const marketContract = new ethers.Contract(
@@ -312,6 +319,11 @@ const CreateItem: NextPage = () => {
             label={`Asking Price (${CURRENCY_NAME})`}
             type={'number'}
             {...form.getInputProps('price')}
+          />
+          <Checkbox
+            mt="md"
+            label="List for sale"
+            {...form.getInputProps('listForSale', { type: 'checkbox' })}
           />
           <Text>
             Image <span className={'text-red-400'}>*</span>

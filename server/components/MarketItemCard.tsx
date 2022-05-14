@@ -3,17 +3,17 @@ import React from 'react'
 import { Button, Card, Group, Image, Title } from '@mantine/core'
 import Link from 'next/link'
 import { textShortener } from '../utils/utils'
+import { LOGO_URL } from '../utils/constants'
+import { DigitalItem, MarketItem } from '../pages/item/[id]'
 
 interface Props {
-  id: string
-  linkTo: string
-  image: string
-  title: string
-  description: string
+  item: DigitalItem
 }
 
 export const MarketItemCard = (props: Props) => {
-  const { image, title, description, linkTo } = props
+  const { item } = props
+  const { image, name, description } = item
+
   return (
     <div style={{}}>
       <Card shadow="sm" p="lg">
@@ -22,12 +22,12 @@ export const MarketItemCard = (props: Props) => {
             <Image
               src={image}
               height={160}
-              alt={props.title}
+              alt={name}
               fit="contain"
               withPlaceholder
               placeholder={
                 <Image
-                  src={`logoipsum-logo-35.svg`}
+                  src={LOGO_URL}
                   height={160}
                   alt="Block Logo"
                   fit="contain"
@@ -39,11 +39,11 @@ export const MarketItemCard = (props: Props) => {
 
         <Group position="apart" style={{ marginBottom: 5 }}>
           <Title align={'center'} order={3}>
-            {title}
+            {name}
           </Title>
         </Group>
         {textShortener(description, 200)}
-        <Link href={linkTo}>
+        <Link href={`/item/${item.tokenId}`}>
           <Group position="apart" style={{ marginBottom: 5 }}>
             <Button
               variant="outline"

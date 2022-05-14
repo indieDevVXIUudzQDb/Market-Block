@@ -64,7 +64,7 @@ export const NavLinks = () => {
         active={router.pathname === '/my-assets'}
       />
       <MainLink
-        label={'Sell Digital Asset'}
+        label={'Create Digital Asset'}
         icon={<BrowserPlus />}
         to={'/create-item'}
         color={'blue'}

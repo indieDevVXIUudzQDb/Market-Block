@@ -11,21 +11,12 @@ import { Layout } from '../components/Layout'
 import Web3Modal from 'web3modal'
 import { MarketItemCard } from '../components/MarketItemCard'
 import { useWeb3State, Web3State } from '../hooks/useWeb3State'
+import { DigitalItem } from './item/[id]'
 
 export type LoadingState = 'not-loaded' | 'loaded'
 
-export interface MarketItem {
-  price: string
-  itemId: number
-  seller: string
-  owner: string
-  image: string
-  name: string
-  description: string
-}
-
 const Home: NextPage = () => {
-  const [marketItems, setMarketItems] = useState<MarketItem[]>([])
+  const [marketItems, setMarketItems] = useState<DigitalItem[]>([])
   const [loadingState, setLoadingState] = useState<LoadingState>('not-loaded')
   const web3State: Web3State = useWeb3State()
 
@@ -37,7 +28,7 @@ const Home: NextPage = () => {
       Market.abi,
       provider
     )
-    const data = await marketContract.fetchAvailableMarketItems()
+    const data = await marketContract.fetchMarketItems()
 
     const items = await Promise.all(
       data.map(
@@ -50,15 +41,16 @@ const Home: NextPage = () => {
         }) => {
           const tokenUri = await tokenContract.tokenURI(i.tokenId)
           const meta = await axios.get(tokenUri)
-          let price = ethers.utils.formatUnits(i.price.toString(), 'ether')
-          let item: MarketItem = {
-            price,
-            itemId: i.itemId.toNumber() as number,
-            seller: i.seller as string,
-            owner: i.owner as string,
+          let item: DigitalItem = {
             image: meta.data.image as string,
             name: meta.data.name as string,
             description: meta.data.description as string,
+            tokenId: i.tokenId,
+            tokenUri,
+            meta,
+            //TODO
+            isApproved: false,
+            isOwner: false,
           }
           console.log({ items })
           return item
@@ -71,25 +63,6 @@ const Home: NextPage = () => {
   useEffect(() => {
     loadMarketItems()
   }, [])
-
-  const buyMarketItem = async (marketItem: MarketItem) => {
-    const web3Modal = new Web3Modal()
-    const connection = await web3Modal.connect()
-    const provider = new ethers.providers.Web3Provider(connection)
-
-    const signer = provider.getSigner()
-    const contract = new ethers.Contract(marketAddress, Market.abi, signer)
-    const price = ethers.utils.parseUnits(marketItem.price.toString(), 'ether')
-    const transaction = await contract.createMarketSale(
-      nftAddress,
-      marketItem.itemId,
-      {
-        value: price,
-      }
-    )
-    await transaction.wait()
-    loadMarketItems()
-  }
 
   return (
     <Layout web3State={web3State}>
@@ -106,15 +79,8 @@ const Home: NextPage = () => {
           ]}
           style={{ marginLeft: '3em' }}
         >
-          {marketItems.map((item: MarketItem, index) => (
-            <MarketItemCard
-              key={index}
-              id={item.itemId.toString()}
-              description={item.description}
-              image={item.image}
-              linkTo={`/item/${item.itemId}`}
-              title={item.name}
-            />
+          {marketItems.map((item: DigitalItem, index) => (
+            <MarketItemCard key={index} item={item} />
           ))}
         </SimpleGrid>
       ) : null}
