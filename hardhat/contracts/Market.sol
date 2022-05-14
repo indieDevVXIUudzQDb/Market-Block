@@ -81,6 +81,8 @@ contract Market is ReentrancyGuard {
             price,
             AvailabilityStatus.AVAILABLE
         );
+        IERC721(nftContract).transferFrom(msg.sender, address(this), tokenId);
+
         emit MarketItemCreated(itemId, nftContract, tokenId, msg.sender, address(0), price, AvailabilityStatus.AVAILABLE);
     }
 
@@ -94,7 +96,7 @@ contract Market is ReentrancyGuard {
         require(msg.value == price, "Please submit the asking price in order to complete the purchase");
 
         idToMarketItem[itemId].seller.transfer(msg.value);
-        IERC721(nftContract).transferFrom(idToMarketItem[itemId].seller, msg.sender, tokenId);
+        IERC721(nftContract).transferFrom(address(this), msg.sender, tokenId);
         idToMarketItem[itemId].owner = payable(msg.sender);
         idToMarketItem[itemId].status = AvailabilityStatus.SOLD;
         _itemsSold.increment();
@@ -107,7 +109,11 @@ contract Market is ReentrancyGuard {
         require(owner == msg.sender, "Only market owner can cancel a market listing.");
         require(idToMarketItem[itemId].status != AvailabilityStatus.SOLD, "This item has already been sold");
         require(idToMarketItem[itemId].status != AvailabilityStatus.CANCELLED, "This item sale has already been cancelled");
+        uint256 tokenId = idToMarketItem[itemId].tokenId;
+        address nftContract = idToMarketItem[itemId].nftContract;
+        IERC721(nftContract).transferFrom(address(this), idToMarketItem[itemId].seller, tokenId);
         idToMarketItem[itemId].status = AvailabilityStatus.CANCELLED;
+
         emit MarketItemStatusChange(itemId, AvailabilityStatus.CANCELLED);
     }
 
