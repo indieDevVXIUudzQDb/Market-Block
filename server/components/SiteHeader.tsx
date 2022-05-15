@@ -31,7 +31,7 @@ export const SiteHeader = (props: { web3State: Web3State }) => {
               toast.success('Address copied to clipboard!', toastConfig)
             }}
           >
-            <Wallet size={16} /> &nbsp; {addressShortener(address)}
+            <Wallet size={16} /> &nbsp; {addressShortener(address, 4)}
           </Button>
         ) : (
           <Button

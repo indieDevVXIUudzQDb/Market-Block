@@ -46,9 +46,7 @@ describe("Market", function () {
     });
 
     // Create a sale
-    await market
-      .connect(buyer)
-      .createMarketSale(nftContractAddress, 1, { value: auctionPrice1 });
+    await market.connect(buyer).createMarketSale(1, { value: auctionPrice1 });
 
     // Cancel a market item
     await market.connect(seller).cancelMarketItem(2);
@@ -132,9 +130,7 @@ describe("Market", function () {
     expect(await nft.balanceOf(seller.address)).to.equal(0);
 
     // Create a sale
-    await market
-      .connect(buyer1)
-      .createMarketSale(nftContractAddress, 1, { value: auctionPrice1 });
+    await market.connect(buyer1).createMarketSale(1, { value: auctionPrice1 });
 
     // Fetch all market items
     const itemResults = await market.fetchMarketItems();
@@ -154,9 +150,7 @@ describe("Market", function () {
       });
 
     // Create 2nd sale
-    await market
-      .connect(buyer2)
-      .createMarketSale(nftContractAddress, 2, { value: auctionPrice2 });
+    await market.connect(buyer2).createMarketSale(2, { value: auctionPrice2 });
 
     expect(await nft.balanceOf(buyer1.address)).to.equal(0);
     expect(await nft.balanceOf(buyer2.address)).to.equal(1);
@@ -212,9 +206,7 @@ describe("Market", function () {
     expect(recentMarketItem.status).to.equal(0);
 
     // Create a sale
-    await market
-      .connect(buyer1)
-      .createMarketSale(nftContractAddress, 1, { value: auctionPrice1 });
+    await market.connect(buyer1).createMarketSale(1, { value: auctionPrice1 });
 
     // Fetch all market items
     const itemResults = await market.fetchMarketItems();
@@ -234,9 +226,7 @@ describe("Market", function () {
     expect(recentMarketItem.status).to.equal(0);
 
     // Create 2nd sale
-    await market
-      .connect(buyer2)
-      .createMarketSale(nftContractAddress, 2, { value: auctionPrice2 });
+    await market.connect(buyer2).createMarketSale(2, { value: auctionPrice2 });
 
     recentMarketItem = await market.fetchMarketItemByTokenId("1");
     expect(recentMarketItem.itemId.toString()).to.equal("2");

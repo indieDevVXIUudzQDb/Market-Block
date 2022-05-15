@@ -25,6 +25,8 @@ import { toast } from 'react-hot-toast'
 import { toastConfig } from '../../utils/toastConfig'
 import { JsonRpcSigner } from '@ethersproject/providers'
 import Web3Modal from 'web3modal'
+import { tryParsePattern } from 'next/dist/build/webpack/plugins/jsconfig-paths-plugin'
+import { isNumber } from 'util'
 
 export interface DigitalItem {
   tokenId: number
@@ -59,7 +61,19 @@ const ItemDetail: NextPage = () => {
   const [loading, setLoading] = useState<boolean>(false)
   const [sellOpened, setSellOpened] = useState(false)
 
-  const loadMarketItem = async (tokenId: number) => {
+  const loadMarketItem = async () => {
+    let tokenId
+    try {
+      if (id && typeof id === 'string') {
+        tokenId = parseInt(id)
+      }
+      if (typeof tokenId !== 'number') {
+        throw new Error('tokenId is NAN')
+      }
+    } catch (e) {
+      return
+    }
+
     setLoading(true)
     const provider = new ethers.providers.JsonRpcProvider(rpcURL)
     const tokenContract = new ethers.Contract(nftAddress, NFT.abi, provider)
@@ -68,79 +82,109 @@ const ItemDetail: NextPage = () => {
       Market.abi,
       provider
     )
-    const tokenUri = await tokenContract.tokenURI(tokenId)
-    const meta = await axios.get(tokenUri)
-    let marketData
-    // This a new item with no market history
+
+    let marketData, meta, tokenUri
     try {
+      tokenUri = await tokenContract.tokenURI(tokenId)
+      meta = await axios.get(tokenUri)
+      // This a new item with no market history
       marketData = await marketContract.fetchMarketItemByTokenId(tokenId)
     } catch (e) {
-      console.log(e)
+      meta = {
+        data: { image: null, name: null, description: null },
+      }
     }
+
+    let approved,
+      isApproved = false,
+      balance,
+      isOwner = false
+    try {
+      approved = await tokenContract.getApproved(tokenId)
+      isApproved = marketAddress.toLowerCase() === approved.toLowerCase()
+      let balanceResult
+      if (web3State.address) {
+        balanceResult = await tokenContract.balanceOf(web3State.address)
+      }
+      if (balanceResult) {
+        balance = balanceResult.toNumber()
+        isOwner = balance > 0
+      }
+    } catch (e) {
+      console.error(e)
+    }
+
     if (marketData) {
       let price = ethers.utils.formatUnits(marketData.price.toString(), 'ether')
+      try {
+        if (
+          marketData.owner === '0x0000000000000000000000000000000000000000' &&
+          web3State.address
+        ) {
+          isOwner = marketData.seller.toLowerCase() === web3State.address
+        }
+      } catch (e) {
+        console.error(e)
+      }
+
       const marketItem: MarketItem = {
         price,
         itemId: marketData.itemId.toNumber() as number,
-        tokenId: marketData.tokenId.toNumber() as number,
+        tokenId,
         seller: marketData.seller as string,
         owner: marketData.owner as string,
         image: meta.data.image as string,
         name: meta.data.name as string,
         description: meta.data.description as string,
         tokenUri,
-        //TODO
-        isOwner:
-          marketData.seller.toLowerCase() === web3State.address?.toLowerCase(),
-        isApproved: false,
+        isOwner,
+        isApproved,
         meta,
         sold: marketData.sold,
-        available: !marketData.sold,
-      } as MarketItem
-      console.log({ marketItem })
+        available: marketData.status === 0,
+      }
+      // console.log({ marketItem })
       setItem(marketItem)
     } else {
-      let owner
-      try {
-        owner = await tokenContract.ownerOf(tokenId).toString()
-      } catch (e) {
-        console.error(e)
-      }
       let digitalItem: DigitalItem = {
-        tokenId: marketData.tokenId.toNumber() as number,
+        tokenId,
         image: meta.data.image as string,
         name: meta.data.name as string,
         description: meta.data.description as string,
         tokenUri,
-        //TODO isApproved
-        isApproved: false,
+        isApproved,
         meta,
-        isOwner:
-          owner && owner.toLowerCase() === web3State.address?.toLowerCase(),
+        isOwner,
       }
-      console.log({ digitalItem })
+      // console.log({ digitalItem })
       setItem(digitalItem)
     }
     setLoading(false)
   }
 
   const buyMarketItem = async (marketItem: MarketItem) => {
-    const web3Modal = new Web3Modal()
-    const connection = await web3Modal.connect()
-    const provider = new ethers.providers.Web3Provider(connection)
+    try {
+      const web3Modal = new Web3Modal()
+      const connection = await web3Modal.connect()
+      const provider = new ethers.providers.Web3Provider(connection)
 
-    const signer = provider.getSigner()
-    const contract = new ethers.Contract(marketAddress, Market.abi, signer)
-    const price = ethers.utils.parseUnits(marketItem.price.toString(), 'ether')
-    const transaction = await contract.createMarketSale(
-      nftAddress,
-      marketItem.itemId,
-      {
+      const signer = provider.getSigner()
+      const contract = new ethers.Contract(marketAddress, Market.abi, signer)
+      const price = ethers.utils.parseUnits(
+        marketItem.price.toString(),
+        'ether'
+      )
+      const transaction = await contract.createMarketSale(marketItem.itemId, {
         value: price,
-      }
-    )
-    await transaction.wait()
-    // loadMarketItems()
+      })
+      await transaction.wait()
+      // console.log({ transaction })
+      toast.success('Market Item Created', toastConfig)
+    } catch (e) {
+      console.error(e)
+      toast.error('Something went wrong', toastConfig)
+    }
+    loadMarketItem()
   }
 
   const sellItem = async (digitalItem: DigitalItem, salePrice: string) => {
@@ -172,23 +216,79 @@ const ItemDetail: NextPage = () => {
         { value: listingPrice }
       )
       await marketTransaction.wait()
-      console.log({ marketTransaction })
+      // console.log({ marketTransaction })
       toast.success('Market Item Created', toastConfig)
     } catch (e) {
       console.error(e)
       toast.error('Something went wrong', toastConfig)
     }
+    loadMarketItem()
+  }
+
+  const cancelMarketSale = async (marketItem: MarketItem) => {
+    try {
+      let signer: JsonRpcSigner
+      // @ts-ignore
+      try {
+        await web3State.connectWallet()
+        // @ts-ignore
+        signer = web3State.provider.getSigner()
+        signer.getAddress()
+      } catch (e) {
+        throw new Error('Wallet not ready or not available')
+      }
+
+      //Create Market Item
+      const marketContract = new ethers.Contract(
+        marketAddress,
+        Market.abi,
+        signer
+      )
+      const marketTransaction = await marketContract.cancelMarketItem(
+        marketItem.itemId
+      )
+      await marketTransaction.wait()
+      // console.log({ marketTransaction })
+      toast.success('Market Item Created', toastConfig)
+    } catch (e) {
+      console.error(e)
+      toast.error('Something went wrong', toastConfig)
+    }
+    loadMarketItem()
+  }
+
+  const approveMarketSale = async (digitalItem: DigitalItem) => {
+    try {
+      let signer: JsonRpcSigner
+      // @ts-ignore
+      try {
+        await web3State.connectWallet()
+        // @ts-ignore
+        signer = web3State.provider.getSigner()
+        signer.getAddress()
+      } catch (e) {
+        throw new Error('Wallet not ready or not available')
+      }
+
+      //Create Market Item
+      const tokenContract = new ethers.Contract(nftAddress, NFT.abi, signer)
+      const approveTransaction = await tokenContract.approve(
+        marketAddress,
+        digitalItem.tokenId
+      )
+
+      await approveTransaction.wait()
+      // console.log({ approveTransaction })
+      toast.success('Market listing approved', toastConfig)
+    } catch (e) {
+      console.error(e)
+      toast.error('Something went wrong', toastConfig)
+    }
+    loadMarketItem()
   }
 
   useEffect(() => {
-    try {
-      if (id && typeof id === 'string') {
-        const tokenId = parseInt(id)
-        loadMarketItem(tokenId)
-      }
-    } catch (e) {
-      console.error(e)
-    }
+    loadMarketItem()
   }, [id, web3State.address])
 
   // @ts-ignore
@@ -274,8 +374,7 @@ const ItemDetail: NextPage = () => {
                   <Button
                     color={'yellow'}
                     onClick={() => {
-                      //TODO
-                      // setOpened(true);
+                      cancelMarketSale(item)
                     }}
                   >
                     Cancel Sale
@@ -300,8 +399,7 @@ const ItemDetail: NextPage = () => {
                   <Button
                     color={'green'}
                     onClick={() => {
-                      //TODO
-                      // approveSellItem(marketItem)
+                      approveMarketSale(item)
                     }}
                   >
                     Approve for Sale
@@ -323,7 +421,6 @@ const ItemDetail: NextPage = () => {
                       color={'green'}
                       disabled={!item.available}
                       onClick={() => {
-                        //TODO
                         buyMarketItem(item)
                       }}
                     >
