@@ -6,25 +6,15 @@ import Market from '../artifacts/contracts/MARKET.sol/Market.json'
 import { useEffect, useState } from 'react'
 import { ethers } from 'ethers'
 import { marketAddress, nftAddress, rpcURL } from '../utils/config'
-import axios from 'axios'
 import { Layout } from '../components/Layout'
 import Web3Modal from 'web3modal'
 import { MarketItemCard } from '../components/MarketItemCard'
 import { useWeb3State, Web3State } from '../hooks/useWeb3State'
+import { DigitalItem, MarketItem } from './item/[id]'
 
 export type LoadingState = 'not-loaded' | 'loaded'
 
-export interface MarketItem {
-  price: string
-  itemId: number
-  seller: string
-  owner: string
-  image: string
-  name: string
-  description: string
-}
-
-const Home: NextPage = () => {
+const MyAssets: NextPage = () => {
   const [marketItems, setMarketItems] = useState<MarketItem[]>([])
   const [loadingState, setLoadingState] = useState<LoadingState>('not-loaded')
   const web3State: Web3State = useWeb3State()
@@ -37,34 +27,9 @@ const Home: NextPage = () => {
       Market.abi,
       provider
     )
-    const data = await marketContract.fetchMyMarketItems()
+    // const data = await marketContract.fetchMyMarketItems()
 
-    const items = await Promise.all(
-      data.map(
-        async (i: {
-          tokenId: any
-          price: { toString: () => ethers.BigNumberish }
-          itemId: { toNumber: () => number }
-          seller: string
-          owner: string
-        }) => {
-          const tokenUri = await tokenContract.tokenURI(i.tokenId)
-          const meta = await axios.get(tokenUri)
-          let price = ethers.utils.formatUnits(i.price.toString(), 'ether')
-          let item: MarketItem = {
-            price,
-            itemId: i.itemId.toNumber() as number,
-            seller: i.seller as string,
-            owner: i.owner as string,
-            image: meta.data.image as string,
-            name: meta.data.name as string,
-            description: meta.data.description as string,
-          }
-          return item
-        }
-      )
-    )
-    setMarketItems(items)
+    // setMarketItems(items)
     setLoadingState('loaded')
   }
   useEffect(() => {
@@ -106,14 +71,7 @@ const Home: NextPage = () => {
           style={{ marginLeft: '3em' }}
         >
           {marketItems.map((item: MarketItem, index) => (
-            <MarketItemCard
-              key={index}
-              id={item.itemId.toString()}
-              description={item.description}
-              image={item.image}
-              linkTo={`/item/${item.itemId}`}
-              title={item.name}
-            />
+            <MarketItemCard key={index} item={item} />
           ))}
         </SimpleGrid>
       ) : null}
@@ -122,4 +80,4 @@ const Home: NextPage = () => {
   )
 }
 
-export default Home
+export default MyAssets

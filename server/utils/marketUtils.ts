@@ -100,6 +100,15 @@ export const loadMarketItemUtil = async (
   }
 }
 
+export const loadMarketItemsUtil = async (
+  web3State: Web3State
+): Promise<(DigitalItem | MarketItem)[]> => {
+  const provider = new ethers.providers.JsonRpcProvider(rpcURL)
+  const tokenContract = new ethers.Contract(nftAddress, NFT.abi, provider)
+  //TODO
+  return []
+}
+
 export const buyMarketItemUtil = async (
   marketItem: MarketItem,
   web3State: Web3State
