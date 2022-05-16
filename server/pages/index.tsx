@@ -13,10 +13,14 @@ import { MarketItemCard } from '../components/MarketItemCard'
 import { useWeb3State, Web3State } from '../hooks/useWeb3State'
 import { DigitalItem, MarketItem } from './item/[id]'
 import { loadMarketItemsUtil } from '../utils/marketUtils'
+import { absoluteUrl, getAppCookies } from '../middleware/utils'
 
 export type LoadingState = 'not-loaded' | 'loaded'
 
-const Home: NextPage = () => {
+const Home: NextPage = (props) => {
+  // @ts-ignore
+  const { origin, assets } = props
+
   const [marketItems, setMarketItems] = useState<(DigitalItem | MarketItem)[]>(
     []
   )
@@ -26,7 +30,7 @@ const Home: NextPage = () => {
   const loadItems = async () => {
     try {
       setLoading(true)
-      const results = await loadMarketItemsUtil(web3State)
+      const results = await loadMarketItemsUtil(assets, web3State)
       setMarketItems(results)
     } catch (e) {
       console.log(e)
@@ -63,3 +67,33 @@ const Home: NextPage = () => {
 }
 
 export default Home
+
+/* getServerSideProps */
+/* getServerSideProps */
+export async function getServerSideProps(context: { query: any; req: any }) {
+  const { query, req } = context
+  const { nextPage } = query
+  const { origin } = absoluteUrl(req)
+
+  // const token = getAppCookies(req).token || ''
+  const referer = req.headers.referer || ''
+
+  const nextPageUrl = !isNaN(nextPage) ? `?nextPage=${nextPage}` : ''
+  const baseApiUrl = `${origin}/api`
+
+  const assetsApi = await fetch(`${baseApiUrl}/assets${nextPageUrl}`, {
+    // headers: {
+    //   authorization: token || '',
+    // },
+  })
+
+  const assets = await assetsApi.json()
+
+  return {
+    props: {
+      origin,
+      referer,
+      assets,
+    },
+  }
+}

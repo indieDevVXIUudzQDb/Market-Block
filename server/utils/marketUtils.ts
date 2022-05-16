@@ -101,12 +101,18 @@ export const loadMarketItemUtil = async (
 }
 
 export const loadMarketItemsUtil = async (
+  assets: any[],
   web3State: Web3State
 ): Promise<(DigitalItem | MarketItem)[]> => {
   const provider = new ethers.providers.JsonRpcProvider(rpcURL)
   const tokenContract = new ethers.Contract(nftAddress, NFT.abi, provider)
+
+  const items = await Promise.all(
+    assets.map(async (asset) => await loadMarketItemUtil(asset.id, web3State))
+  )
+  console.log(items)
   //TODO
-  return []
+  return items
 }
 
 export const buyMarketItemUtil = async (

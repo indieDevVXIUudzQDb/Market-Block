@@ -38,3 +38,4 @@ yarn-error.log*
 *.tsbuildinfo
 artifacts
 
+/db/database.sqlite
