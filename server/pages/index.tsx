@@ -31,6 +31,7 @@ const Home: NextPage = (props) => {
     try {
       setLoading(true)
       const results = await loadMarketItemsUtil(assets, web3State)
+      console.log({ results })
       setMarketItems(results)
     } catch (e) {
       console.log(e)
@@ -43,9 +44,9 @@ const Home: NextPage = (props) => {
 
   return (
     <Layout web3State={web3State}>
-      {loading && !marketItems.length ? (
+      {!loading && !marketItems.length ? (
         <p>No assets available in the market</p>
-      ) : loading && marketItems.length ? (
+      ) : !loading && marketItems.length ? (
         <SimpleGrid
           cols={3}
           spacing="lg"
@@ -81,13 +82,20 @@ export async function getServerSideProps(context: { query: any; req: any }) {
   const nextPageUrl = !isNaN(nextPage) ? `?nextPage=${nextPage}` : ''
   const baseApiUrl = `${origin}/api`
 
-  const assetsApi = await fetch(`${baseApiUrl}/assets${nextPageUrl}`, {
+  const response = await fetch(`${baseApiUrl}/assets${nextPageUrl}`, {
     // headers: {
     //   authorization: token || '',
     // },
   })
 
-  const assets = await assetsApi.json()
+  let assets = []
+  try {
+    const res = await response.json()
+    assets = res.data
+    console.log({ assets })
+  } catch (e) {
+    console.error(e)
+  }
 
   return {
     props: {

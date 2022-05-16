@@ -108,10 +108,10 @@ export const loadMarketItemsUtil = async (
   const tokenContract = new ethers.Contract(nftAddress, NFT.abi, provider)
 
   const items = await Promise.all(
-    assets.map(async (asset) => await loadMarketItemUtil(asset.id, web3State))
+    assets.map(
+      async (asset) => await loadMarketItemUtil(asset.tokenId, web3State)
+    )
   )
-  console.log(items)
-  //TODO
   return items
 }
 

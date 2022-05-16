@@ -40,10 +40,14 @@ import { toastConfig } from '../utils/toastConfig'
 import { readFileAsync } from '../utils/utils'
 import { useWeb3State, Web3State } from '../hooks/useWeb3State'
 import { CURRENCY_NAME } from '../utils/constants'
+import { absoluteUrl, getAppCookies } from '../middleware/utils'
 
 const client = ipfsHttpClient({ url: `${ipfsAPIURL}` })
 
-const CreateItem: NextPage = () => {
+const CreateItem: (props: { baseApiUrl: string }) => JSX.Element = (props: {
+  baseApiUrl: string
+}) => {
+  const { baseApiUrl } = props
   const [uploadProgress, setUploadProgress] = useState<number>(0)
   const [uploadFilename, setUploadFilename] = useState<string | null>(null)
   const [uploadingImage, setUploadingImage] = useState(false)
@@ -253,6 +257,31 @@ const CreateItem: NextPage = () => {
       const value = event.args[2]
       const tokenId = value.toNumber()
       console.log({ tokenId })
+
+      const jobApi = await fetch(`${baseApiUrl}/assets/[slug]`, {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          tokenId,
+          address: nftAddress,
+        }),
+      })
+
+      let result = await jobApi.json()
+      if (
+        result.status === 'success' &&
+        result.message &&
+        result.message === 'done' &&
+        result.data
+      ) {
+        toast.success('Item Created Successfully', toastConfig)
+      } else {
+        toast.error('Something went wrong', toastConfig)
+      }
+
       if (listForSale) {
         // @ts-ignore
         await createMarketItem(tokenId, price)
@@ -290,7 +319,7 @@ const CreateItem: NextPage = () => {
       )
       await marketTransaction.wait()
       console.log({ marketTransaction })
-      toast.success('Market Item Created', toastConfig)
+      toast.success('Market Item Listed Successfully', toastConfig)
       resetPage()
     } catch (e) {
       console.error(e)
@@ -407,6 +436,21 @@ const CreateItem: NextPage = () => {
       </Box>
     </Layout>
   )
+}
+
+/* getServerSideProps */
+export async function getServerSideProps(context: { query: any; req: any }) {
+  const { query, req } = context
+  const { origin } = absoluteUrl(req)
+
+  const baseApiUrl = `${origin}/api`
+
+  return {
+    props: {
+      origin,
+      baseApiUrl,
+    },
+  }
 }
 
 export default CreateItem

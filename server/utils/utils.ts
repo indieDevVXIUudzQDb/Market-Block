@@ -5,7 +5,7 @@ export const addressShortener = (address: string, maxLength: number) => {
 }
 
 export const textShortener = (text: string, maxLength: number) => {
-  if (text.length > maxLength) {
+  if (text && text.length && text.length > maxLength) {
     const start = text.substring(0, maxLength)
     return `${start}…`
   }
