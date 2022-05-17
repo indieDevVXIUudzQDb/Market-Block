@@ -22,7 +22,7 @@ const Home: (props: {
   assets: any[]
 }) => JSX.Element = (props: { origin: string; assets: any[] }) => {
   // @ts-ignore
-  const { origin, assets } = props
+  const { origin, baseApiUrl, nextPage: nextPage } = props
 
   const [marketItems, setMarketItems] = useState<(DigitalItem | MarketItem)[]>(
     []
@@ -33,6 +33,23 @@ const Home: (props: {
   const loadItems = async () => {
     try {
       setLoading(true)
+      const baseApiUrl = `${origin}/api`
+      const nextPageUrl = nextPage ? nextPage : ''
+
+      const response = await fetch(`${baseApiUrl}/assets?${nextPageUrl}`, {
+        // headers: {
+        //   authorization: token || '',
+        // },
+      })
+
+      let assets = []
+      try {
+        const res = await response.json()
+        assets = res.data
+      } catch (e) {
+        console.error(e)
+      }
+
       const results = await loadMarketItemsUtil(assets, web3State)
       console.log({ results })
       setMarketItems(results)
@@ -81,30 +98,13 @@ export async function getServerSideProps(context: { query: any; req: any }) {
 
   // const token = getAppCookies(req).token || ''
   const referer = req.headers.referer || ''
-
   const nextPageUrl = !isNaN(nextPage) ? `?nextPage=${nextPage}` : ''
-  const baseApiUrl = `${origin}/api`
-
-  const response = await fetch(`${baseApiUrl}/assets${nextPageUrl}`, {
-    // headers: {
-    //   authorization: token || '',
-    // },
-  })
-
-  let assets = []
-  try {
-    const res = await response.json()
-    assets = res.data
-    console.log({ assets })
-  } catch (e) {
-    console.error(e)
-  }
 
   return {
     props: {
       origin,
       referer,
-      assets,
+      nextPageUrl,
     },
   }
 }
