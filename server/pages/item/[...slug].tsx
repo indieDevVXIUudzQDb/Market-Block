@@ -63,8 +63,13 @@ const ItemDetail: NextPage = () => {
   const loadMarketItem = async () => {
     let tokenId
     try {
-      const tokenAddress = slug[0]
-      const tokenIdRaw = slug[1]
+      let tokenAddress, tokenIdRaw
+      if (slug != null) {
+        tokenAddress = slug[0]
+        tokenIdRaw = slug[1]
+      } else {
+        return
+      }
       if (
         tokenIdRaw &&
         typeof tokenIdRaw === 'string' &&
