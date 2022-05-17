@@ -1,5 +1,5 @@
 import { SiteHeader } from '../components/SiteHeader'
-import { BACKGROUND_URL } from '../utils/constants'
+import { BACKGROUND_URL } from '../utils/constants/constants'
 import { AppShell } from '@mantine/core'
 import { Web3State } from '../hooks/useWeb3State'
 

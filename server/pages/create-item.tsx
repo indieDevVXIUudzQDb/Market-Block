@@ -1,46 +1,45 @@
 import { useState } from 'react'
 import { useForm } from '@mantine/form'
 import {
+  ActionIcon,
   Box,
   Button,
-  Group,
-  TextInput,
-  Text,
-  useMantineTheme,
-  MantineTheme,
-  ActionIcon,
-  Space,
-  Progress,
   Checkbox,
+  Group,
+  MantineTheme,
+  Progress,
+  Space,
+  Text,
+  TextInput,
+  useMantineTheme,
 } from '@mantine/core'
 import {
-  Upload,
-  Photo,
-  X,
-  Icon as TablerIcon,
   Files,
+  Icon as TablerIcon,
+  Photo,
   Trash,
+  Upload,
+  X,
 } from 'tabler-icons-react'
 import { Dropzone, DropzoneStatus, IMAGE_MIME_TYPE } from '@mantine/dropzone'
 
 import { ethers } from 'ethers'
 import { create as ipfsHttpClient } from 'ipfs-http-client'
-import { NextPage } from 'next'
 import { Layout } from '../components/Layout'
 import {
   ipfsAPIURL,
   ipfsFileURL,
   marketAddress,
   nftAddress,
-} from '../utils/config'
+} from '../utils/constants/config'
 import NFT from '../artifacts/contracts/NFT.sol/NFT.json'
 import Market from '../artifacts/contracts/MARKET.sol/Market.json'
 import { toast } from 'react-hot-toast'
-import { toastConfig } from '../utils/toastConfig'
+import { toastConfig } from '../utils/constants/toastConfig'
 import { readFileAsync } from '../utils/utils'
 import { useWeb3State, Web3State } from '../hooks/useWeb3State'
-import { CURRENCY_NAME } from '../utils/constants'
-import { absoluteUrl, getAppCookies } from '../middleware/utils'
+import { CURRENCY_NAME } from '../utils/constants/constants'
+import { absoluteUrl } from '../middleware/utils'
 
 const client = ipfsHttpClient({ url: `${ipfsAPIURL}` })
 

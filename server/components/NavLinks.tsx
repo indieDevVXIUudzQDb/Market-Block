@@ -1,22 +1,5 @@
-import {
-  Group,
-  Navbar,
-  ThemeIcon,
-  UnstyledButton,
-  Text,
-  Anchor,
-  Button,
-  Card,
-} from '@mantine/core'
-import {
-  Home,
-  Package,
-  Plus,
-  PackgeImport,
-  Browser,
-  BrowserPlus,
-  BrowserCheck,
-} from 'tabler-icons-react'
+import { Button, Group, Text } from '@mantine/core'
+import { Browser, BrowserCheck, BrowserPlus } from 'tabler-icons-react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 

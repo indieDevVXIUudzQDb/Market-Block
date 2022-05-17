@@ -12,18 +12,18 @@ import { useEffect, useState } from 'react'
 import { Layout } from '../../components/Layout'
 import { useRouter } from 'next/router'
 import { Prism } from '@mantine/prism'
-import { CURRENCY_NAME, LOGO_URL } from '../../utils/constants'
+import { CURRENCY_NAME, LOGO_URL } from '../../utils/constants/constants'
 import { useWeb3State, Web3State } from '../../hooks/useWeb3State'
 import { SellModal } from '../../components/SellModal'
 import { toast } from 'react-hot-toast'
-import { toastConfig } from '../../utils/toastConfig'
+import { toastConfig } from '../../utils/constants/toastConfig'
 import {
   approveMarketSaleUtil,
   buyMarketItemUtil,
   cancelMarketSaleUtil,
   loadMarketItemUtil,
   sellItemUtil,
-} from '../../utils/marketUtils'
+} from '../../utils/helpers/marketUtils'
 
 export interface DigitalItem {
   tokenId: number
@@ -51,7 +51,9 @@ export const isMarketItem = (object: any): object is MarketItem => {
 
 const ItemDetail: NextPage = () => {
   const router = useRouter()
-  const { id } = router.query
+  // const { id } = router.query
+  console.log({ router })
+  const id = 1
   const web3State: Web3State = useWeb3State()
 
   const [item, setItem] = useState<DigitalItem | MarketItem | null>()

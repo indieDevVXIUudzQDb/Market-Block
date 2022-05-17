@@ -3,8 +3,8 @@ import React from 'react'
 import { Button, Card, Group, Image, Title } from '@mantine/core'
 import Link from 'next/link'
 import { textShortener } from '../utils/utils'
-import { LOGO_URL } from '../utils/constants'
-import { DigitalItem, MarketItem } from '../pages/item/[id]'
+import { LOGO_URL } from '../utils/constants/constants'
+import { DigitalItem } from '../pages/item/[...slug]'
 
 interface Props {
   item: DigitalItem

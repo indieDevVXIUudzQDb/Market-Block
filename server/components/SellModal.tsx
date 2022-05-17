@@ -1,6 +1,6 @@
 import { Button, Group, Modal, TextInput } from '@mantine/core'
 import { useForm } from '@mantine/hooks'
-import { DigitalItem, MarketItem } from '../pages/item/[id]'
+import { DigitalItem, MarketItem } from '../pages/item/[...slug]'
 
 interface Props {
   opened: boolean

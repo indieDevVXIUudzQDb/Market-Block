@@ -1,6 +1,10 @@
 import nextConnect from 'next-connect'
 import { ethers } from 'ethers'
-import { marketAddress, nftAddress, rpcURL } from '../../../utils/config'
+import {
+  marketAddress,
+  nftAddress,
+  rpcURL,
+} from '../../../utils/constants/config'
 import NFT from '../../../artifacts/contracts/NFT.sol/NFT.json'
 import Market from '../../../artifacts/contracts/MARKET.sol/Market.json'
 

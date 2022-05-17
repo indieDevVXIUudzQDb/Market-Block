@@ -1,17 +1,14 @@
-import type { NextPage } from 'next'
-import { Group, SimpleGrid } from '@mantine/core'
-
-import NFT from '../artifacts/contracts/NFT.sol/NFT.json'
+import { SimpleGrid } from '@mantine/core'
 import Market from '../artifacts/contracts/MARKET.sol/Market.json'
 import { useEffect, useState } from 'react'
 import { ethers } from 'ethers'
-import { marketAddress, nftAddress, rpcURL } from '../utils/config'
+import { marketAddress, nftAddress } from '../utils/constants/config'
 import { Layout } from '../components/Layout'
 import Web3Modal from 'web3modal'
 import { MarketItemCard } from '../components/MarketItemCard'
 import { useWeb3State, Web3State } from '../hooks/useWeb3State'
-import { DigitalItem, MarketItem } from './item/[id]'
-import { loadMarketItemsUtil } from '../utils/marketUtils'
+import { DigitalItem, MarketItem } from './item/[...slug]'
+import { loadMarketItemsUtil } from '../utils/helpers/marketUtils'
 import { absoluteUrl } from '../middleware/utils'
 
 const MyAssets: (props: {

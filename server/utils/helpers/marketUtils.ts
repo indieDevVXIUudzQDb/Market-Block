@@ -1,14 +1,12 @@
 import { ethers } from 'ethers'
-import { marketAddress, nftAddress, rpcURL } from './config'
-import NFT from '../artifacts/contracts/NFT.sol/NFT.json'
-import Market from '../artifacts/contracts/MARKET.sol/Market.json'
+import { marketAddress, nftAddress, rpcURL } from '../constants/config'
+import NFT from '../../artifacts/contracts/NFT.sol/NFT.json'
+import Market from '../../artifacts/contracts/MARKET.sol/Market.json'
 import axios from 'axios'
 import Web3Modal from 'web3modal'
-import { toast } from 'react-hot-toast'
-import { toastConfig } from './toastConfig'
 import { JsonRpcSigner } from '@ethersproject/providers'
-import { DigitalItem, MarketItem } from '../pages/item/[id]'
-import { Web3State } from '../hooks/useWeb3State'
+import { Web3State } from '../../hooks/useWeb3State'
+import { DigitalItem, MarketItem } from '../../pages/item/[...slug]'
 
 export const loadMarketItemUtil = async (
   tokenId: number,
@@ -213,5 +211,4 @@ export const approveMarketSaleUtil = async (
 
   await approveTransaction.wait()
   // console.log({ approveTransaction })
-  toast.success('Market listing approved', toastConfig)
 }

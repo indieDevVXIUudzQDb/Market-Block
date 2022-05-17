@@ -1,17 +1,12 @@
 import { AppProps } from 'next/app'
 import Head from 'next/head'
 import { MantineProvider } from '@mantine/core'
-import { ThirdwebWeb3Provider } from '@3rdweb/hooks'
 
 import '../styles/globals.css'
-import { SITE_NAME } from '../utils/constants'
+import { SITE_NAME } from '../utils/constants/constants'
 
 export default function App(props: AppProps) {
   const { Component, pageProps } = props
-  const supportedChainIds = [80001, 4]
-  const connectors = {
-    injected: {},
-  }
   return (
     <>
       <Head>
