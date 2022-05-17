@@ -1,5 +1,5 @@
 import { ethers } from 'ethers'
-import { marketAddress, nftAddress, rpcURL } from '../constants/config'
+import { rpcURL } from '../constants/config'
 import NFT from '../../artifacts/contracts/NFT.sol/NFT.json'
 import Market from '../../artifacts/contracts/MARKET.sol/Market.json'
 import axios from 'axios'
@@ -7,6 +7,7 @@ import Web3Modal from 'web3modal'
 import { JsonRpcSigner } from '@ethersproject/providers'
 import { Web3State } from '../../hooks/useWeb3State'
 import { DigitalItem, MarketItem } from '../../pages/item/[...slug]'
+import { marketAddress, nftAddress } from '../constants/contracts'
 
 export const loadMarketItemUtil = async (
   tokenId: number,
@@ -14,7 +15,7 @@ export const loadMarketItemUtil = async (
   web3State: Web3State
 ) => {
   const provider = new ethers.providers.JsonRpcProvider(rpcURL)
-  const tokenContract = new ethers.Contract(nftAddress, NFT.abi, provider)
+  const tokenContract = new ethers.Contract(tokenAddress, NFT.abi, provider)
   const marketContract = new ethers.Contract(
     marketAddress,
     Market.abi,

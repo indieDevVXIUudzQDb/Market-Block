@@ -42,7 +42,7 @@ export const NavLinks = (props: { address: string }) => {
       <MainLink
         label={'My Digital Assets'}
         icon={<BrowserCheck />}
-        to={`/my-assets?address=${props.address}`}
+        to={`/my-assets`}
         color={'blue'}
         active={router.pathname === '/my-assets'}
       />

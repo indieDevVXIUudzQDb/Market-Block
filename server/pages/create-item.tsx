@@ -261,7 +261,7 @@ const CreateItem: (props: { baseApiUrl: string }) => JSX.Element = (props: {
         },
         body: JSON.stringify({
           tokenId,
-          address: nftAddress,
+          tokenAddress: nftAddress,
         }),
       })
 

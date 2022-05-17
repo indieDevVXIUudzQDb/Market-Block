@@ -52,9 +52,8 @@ export const isMarketItem = (object: any): object is MarketItem => {
 
 const ItemDetail: NextPage = () => {
   const router = useRouter()
-  // const { id } = router.query
+  const { slug } = router.query
   console.log({ router })
-  const id = 1
   const web3State: Web3State = useWeb3State()
 
   const [item, setItem] = useState<DigitalItem | MarketItem | null>()
@@ -64,14 +63,21 @@ const ItemDetail: NextPage = () => {
   const loadMarketItem = async () => {
     let tokenId
     try {
-      if (id && typeof id === 'string') {
-        tokenId = parseInt(id)
+      const tokenAddress = slug[0]
+      const tokenIdRaw = slug[1]
+      if (
+        tokenIdRaw &&
+        typeof tokenIdRaw === 'string' &&
+        tokenAddress &&
+        typeof tokenAddress === 'string'
+      ) {
+        tokenId = parseInt(tokenIdRaw)
         if (typeof tokenId !== 'number') {
           throw new Error('tokenId is NAN')
         }
         setLoading(true)
         //TODO
-        const tokenAddress = ''
+        console.log({ tokenId, tokenAddress })
         let loaded = await loadMarketItemUtil(tokenId, tokenAddress, web3State)
         setItem(loaded)
         setLoading(false)
@@ -127,12 +133,12 @@ const ItemDetail: NextPage = () => {
 
   useEffect(() => {
     loadMarketItem()
-  }, [id, web3State.address])
+  }, [slug, web3State.address])
 
   return (
     <Layout web3State={web3State}>
       {!loading && !item ? (
-        <p>Item not found=</p>
+        <p>Item not found</p>
       ) : !loading && item ? (
         <>
           {item ? (

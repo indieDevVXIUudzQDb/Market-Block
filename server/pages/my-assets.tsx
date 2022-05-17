@@ -26,11 +26,12 @@ const MyAssets: (props: {
 
   const loadMarketItems = async () => {
     try {
+      if (!web3State.address) return
       setLoading(true)
       const baseApiUrl = `${origin}/api`
 
       const response = await fetch(
-        `${baseApiUrl}/assets/my-assets?address=${web3State.address}${nextPageUrl}`,
+        `${baseApiUrl}/assets/my-assets?queryAddress=${web3State.address}${nextPageUrl}`,
         {
           // headers: {
           //   authorization: token || '',

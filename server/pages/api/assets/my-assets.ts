@@ -13,7 +13,7 @@ const handler = nextConnect()
   .get(async (req, res) => {
     const {
       // @ts-ignore
-      query: { nextPage, address },
+      query: { nextPage, queryAddress },
     } = req
     const limit = 20
     const assets = await models.assets.findAndCountAll({
@@ -46,9 +46,9 @@ const handler = nextConnect()
         } else {
           owner = await tokenContract.ownerOf(asset.tokenId)
         }
-        console.log('owner', owner, 'address', address)
-        console.log(owner.toLowerCase() === address.toLowerCase())
-        return owner.toLowerCase() === address.toLowerCase()
+        console.log('owner', owner, 'address', queryAddress)
+        console.log(owner.toLowerCase() === queryAddress.toLowerCase())
+        return owner.toLowerCase() === queryAddress.toLowerCase()
       }
     )
 
