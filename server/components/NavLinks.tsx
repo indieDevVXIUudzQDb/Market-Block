@@ -45,7 +45,7 @@ function MainLink({ icon, color, label, to, active }: MainLinkProps) {
   )
 }
 
-export const NavLinks = () => {
+export const NavLinks = (props: { address: string }) => {
   const router = useRouter()
   return (
     <>
@@ -59,7 +59,7 @@ export const NavLinks = () => {
       <MainLink
         label={'My Digital Assets'}
         icon={<BrowserCheck />}
-        to={'/my-assets'}
+        to={`/my-assets?address=${props.address}`}
         color={'blue'}
         active={router.pathname === '/my-assets'}
       />

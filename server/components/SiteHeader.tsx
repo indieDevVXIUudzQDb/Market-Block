@@ -44,7 +44,7 @@ export const SiteHeader = (props: { web3State: Web3State }) => {
         )}
       </Group>
       <Group className={'p-3'}>
-        <NavLinks />
+        <NavLinks address={address || ''} />
       </Group>
     </Header>
   )

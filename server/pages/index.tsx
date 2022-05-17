@@ -17,7 +17,10 @@ import { absoluteUrl, getAppCookies } from '../middleware/utils'
 
 export type LoadingState = 'not-loaded' | 'loaded'
 
-const Home: NextPage = (props) => {
+const Home: (props: {
+  origin: string
+  assets: any[]
+}) => JSX.Element = (props: { origin: string; assets: any[] }) => {
   // @ts-ignore
   const { origin, assets } = props
 

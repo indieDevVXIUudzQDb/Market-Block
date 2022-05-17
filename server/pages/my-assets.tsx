@@ -11,30 +11,55 @@ import Web3Modal from 'web3modal'
 import { MarketItemCard } from '../components/MarketItemCard'
 import { useWeb3State, Web3State } from '../hooks/useWeb3State'
 import { DigitalItem, MarketItem } from './item/[id]'
+import { loadMarketItemsUtil } from '../utils/marketUtils'
+import { absoluteUrl } from '../middleware/utils'
 
-export type LoadingState = 'not-loaded' | 'loaded'
+const MyAssets: (props: {
+  origin: string
+  nextPageUrl: string
+}) => JSX.Element = (props: { origin: string; nextPageUrl: string }) => {
+  const { origin, nextPageUrl } = props
 
-const MyAssets: NextPage = () => {
-  const [marketItems, setMarketItems] = useState<MarketItem[]>([])
-  const [loadingState, setLoadingState] = useState<LoadingState>('not-loaded')
+  const [marketItems, setMarketItems] = useState<(DigitalItem | MarketItem)[]>(
+    []
+  )
+  const [loading, setLoading] = useState<boolean>(false)
+
   const web3State: Web3State = useWeb3State()
 
   const loadMarketItems = async () => {
-    const provider = new ethers.providers.JsonRpcProvider(rpcURL)
-    const tokenContract = new ethers.Contract(nftAddress, NFT.abi, provider)
-    const marketContract = new ethers.Contract(
-      marketAddress,
-      Market.abi,
-      provider
-    )
-    // const data = await marketContract.fetchMyMarketItems()
+    try {
+      setLoading(true)
+      const baseApiUrl = `${origin}/api`
 
-    // setMarketItems(items)
-    setLoadingState('loaded')
+      const response = await fetch(
+        `${baseApiUrl}/assets/my-assets?address=${web3State.address}${nextPageUrl}`,
+        {
+          // headers: {
+          //   authorization: token || '',
+          // },
+        }
+      )
+
+      let assets = []
+      try {
+        const res = await response.json()
+        assets = res.data
+        console.log({ assets })
+      } catch (e) {
+        console.error('client', e)
+      }
+      const results = await loadMarketItemsUtil(assets, web3State)
+      console.log({ results })
+      setMarketItems(results)
+    } catch (e) {
+      console.log(e)
+    }
+    setLoading(false)
   }
   useEffect(() => {
     loadMarketItems()
-  }, [])
+  }, [web3State.address])
 
   const buyMarketItem = async (marketItem: MarketItem) => {
     const web3Modal = new Web3Modal()
@@ -57,9 +82,9 @@ const MyAssets: NextPage = () => {
 
   return (
     <Layout web3State={web3State}>
-      {loadingState === 'loaded' && !marketItems.length ? (
+      {!loading && !marketItems.length ? (
         <p>No assets owned</p>
-      ) : loadingState === 'loaded' && marketItems.length ? (
+      ) : !loading && marketItems.length ? (
         <SimpleGrid
           cols={3}
           spacing="lg"
@@ -70,7 +95,7 @@ const MyAssets: NextPage = () => {
           ]}
           style={{ marginLeft: '3em' }}
         >
-          {marketItems.map((item: MarketItem, index) => (
+          {marketItems.map((item, index) => (
             <MarketItemCard key={index} item={item} />
           ))}
         </SimpleGrid>
@@ -78,6 +103,25 @@ const MyAssets: NextPage = () => {
       <div style={{ minHeight: '1000px' }}></div>
     </Layout>
   )
+}
+
+export async function getServerSideProps(context: { query: any; req: any }) {
+  const { query, req } = context
+  const { nextPage, address } = query
+  const { origin } = absoluteUrl(req)
+
+  // const token = getAppCookies(req).token || ''
+  const referer = req.headers.referer || ''
+
+  const nextPageUrl = !isNaN(nextPage) ? `nextPage=${nextPage}` : ''
+
+  return {
+    props: {
+      origin,
+      referer,
+      nextPageUrl,
+    },
+  }
 }
 
 export default MyAssets
