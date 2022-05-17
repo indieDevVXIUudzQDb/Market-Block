@@ -20,11 +20,14 @@ async function main() {
   await nft.deployed();
   console.log("nft deployed to:", nft.address);
 
-  const content = `NEXT_PUBLIC_MARKET_CONTRACT_ADDRESS="${nftMarket.address}"\n
-  NEXT_PUBLIC_NFT_CONTRACT_ADDRESS="${nft.address}"\n`;
-
   try {
-    fs.writeFileSync("../server/.env.local", content);
+    fs.writeFileSync(
+      "../server/utils/constants/contracts.ts",
+      `/* Auto generated from hardhat/deploy.js */
+export const nftAddress = "${nftMarket.address}"
+export const marketAddress = "${nft.address}"
+`
+    );
     console.log(".env.local written successfully");
   } catch (e) {
     console.error(e);
