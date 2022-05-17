@@ -65,7 +65,8 @@ contract Market is ReentrancyGuard {
         uint256 price
     ) public payable nonReentrant {
         console.log("Creating Market Item:", nftContract, tokenId, price);
-
+        bool supported = IERC721(nftContract).supportsInterface(type(IERC721).interfaceId);
+        require(supported == true);
         require(price > 0, "Price must be at least 1 wei");
         require(msg.value == listingPrice, "Price must be equal to listing price");
 
