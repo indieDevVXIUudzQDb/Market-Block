@@ -43,7 +43,7 @@ export const MarketItemCard = (props: Props) => {
           </Title>
         </Group>
         {textShortener(description, 200)}
-        <Link href={`/item/${item.tokenId}`}>
+        <Link href={`/item/${item.tokenAddress}/${item.tokenId}`}>
           <Group position="apart" style={{ marginBottom: 5 }}>
             <Button
               variant="outline"

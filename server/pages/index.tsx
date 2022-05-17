@@ -4,7 +4,7 @@ import { Layout } from '../components/Layout'
 import { MarketItemCard } from '../components/MarketItemCard'
 import { useWeb3State, Web3State } from '../hooks/useWeb3State'
 import { DigitalItem, MarketItem } from './item/[...slug]'
-import { loadMarketItemsUtil } from '../utils/helpers/marketUtils'
+import { loadMarketItemsUtil } from '../utils/helpers/marketHelpers'
 import { absoluteUrl } from '../middleware/utils'
 
 const Home: (props: {

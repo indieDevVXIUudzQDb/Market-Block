@@ -10,6 +10,7 @@ import { DigitalItem, MarketItem } from '../../pages/item/[...slug]'
 
 export const loadMarketItemUtil = async (
   tokenId: number,
+  tokenAddress: string,
   web3State: Web3State
 ) => {
   const provider = new ethers.providers.JsonRpcProvider(rpcURL)
@@ -65,9 +66,10 @@ export const loadMarketItemUtil = async (
     }
 
     const marketItem: MarketItem = {
+      tokenId,
+      tokenAddress,
       price,
       itemId: marketData.itemId.toNumber() as number,
-      tokenId,
       seller: marketData.seller as string,
       owner: marketData.owner as string,
       image: meta.data.image as string,
@@ -85,6 +87,7 @@ export const loadMarketItemUtil = async (
   } else {
     let digitalItem: DigitalItem = {
       tokenId,
+      tokenAddress,
       image: meta.data.image as string,
       name: meta.data.name as string,
       description: meta.data.description as string,
@@ -102,12 +105,10 @@ export const loadMarketItemsUtil = async (
   assets: any[],
   web3State: Web3State
 ): Promise<(DigitalItem | MarketItem)[]> => {
-  const provider = new ethers.providers.JsonRpcProvider(rpcURL)
-  const tokenContract = new ethers.Contract(nftAddress, NFT.abi, provider)
-
   const items = await Promise.all(
     assets.map(
-      async (asset) => await loadMarketItemUtil(asset.tokenId, web3State)
+      async (asset) =>
+        await loadMarketItemUtil(asset.tokenId, asset.tokenAddress, web3State)
     )
   )
   return items

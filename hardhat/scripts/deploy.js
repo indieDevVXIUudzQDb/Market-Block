@@ -24,11 +24,11 @@ async function main() {
     fs.writeFileSync(
       "../server/utils/constants/contracts.ts",
       `/* Auto generated from hardhat/deploy.js */
-export const nftAddress = "${nftMarket.address}"
-export const marketAddress = "${nft.address}"
+export const nftAddress = "${nft.address}"
+export const marketAddress = "${nftMarket.address}"
 `
     );
-    console.log(".env.local written successfully");
+    console.log("../server/utils/constants/contracts.ts written successfully");
   } catch (e) {
     console.error(e);
   }

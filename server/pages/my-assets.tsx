@@ -2,14 +2,14 @@ import { SimpleGrid } from '@mantine/core'
 import Market from '../artifacts/contracts/MARKET.sol/Market.json'
 import { useEffect, useState } from 'react'
 import { ethers } from 'ethers'
-import { marketAddress, nftAddress } from '../utils/constants/config'
 import { Layout } from '../components/Layout'
 import Web3Modal from 'web3modal'
 import { MarketItemCard } from '../components/MarketItemCard'
 import { useWeb3State, Web3State } from '../hooks/useWeb3State'
 import { DigitalItem, MarketItem } from './item/[...slug]'
-import { loadMarketItemsUtil } from '../utils/helpers/marketUtils'
+import { loadMarketItemsUtil } from '../utils/helpers/marketHelpers'
 import { absoluteUrl } from '../middleware/utils'
+import { marketAddress, nftAddress } from '../utils/constants/contracts'
 
 const MyAssets: (props: {
   origin: string

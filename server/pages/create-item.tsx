@@ -26,12 +26,7 @@ import { Dropzone, DropzoneStatus, IMAGE_MIME_TYPE } from '@mantine/dropzone'
 import { ethers } from 'ethers'
 import { create as ipfsHttpClient } from 'ipfs-http-client'
 import { Layout } from '../components/Layout'
-import {
-  ipfsAPIURL,
-  ipfsFileURL,
-  marketAddress,
-  nftAddress,
-} from '../utils/constants/config'
+import { ipfsAPIURL, ipfsFileURL } from '../utils/constants/config'
 import NFT from '../artifacts/contracts/NFT.sol/NFT.json'
 import Market from '../artifacts/contracts/MARKET.sol/Market.json'
 import { toast } from 'react-hot-toast'
@@ -40,6 +35,7 @@ import { readFileAsync } from '../utils/utils'
 import { useWeb3State, Web3State } from '../hooks/useWeb3State'
 import { CURRENCY_NAME } from '../utils/constants/constants'
 import { absoluteUrl } from '../middleware/utils'
+import { marketAddress, nftAddress } from '../utils/constants/contracts'
 
 const client = ipfsHttpClient({ url: `${ipfsAPIURL}` })
 

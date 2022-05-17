@@ -23,10 +23,11 @@ import {
   cancelMarketSaleUtil,
   loadMarketItemUtil,
   sellItemUtil,
-} from '../../utils/helpers/marketUtils'
+} from '../../utils/helpers/marketHelpers'
 
 export interface DigitalItem {
   tokenId: number
+  tokenAddress: string
   image: string
   name: string
   description: string
@@ -69,7 +70,9 @@ const ItemDetail: NextPage = () => {
           throw new Error('tokenId is NAN')
         }
         setLoading(true)
-        let loaded = await loadMarketItemUtil(tokenId, web3State)
+        //TODO
+        const tokenAddress = ''
+        let loaded = await loadMarketItemUtil(tokenId, tokenAddress, web3State)
         setItem(loaded)
         setLoading(false)
       }

@@ -1,24 +1,12 @@
 import nextConnect from 'next-connect'
 import { ethers } from 'ethers'
-import {
-  marketAddress,
-  nftAddress,
-  rpcURL,
-} from '../../../utils/constants/config'
+import { rpcURL } from '../../../utils/constants/config'
 import NFT from '../../../artifacts/contracts/NFT.sol/NFT.json'
 import Market from '../../../artifacts/contracts/MARKET.sol/Market.json'
+import { filter } from '../../../utils/helpers/common'
+import { marketAddress } from '../../../utils/constants/contracts'
 
 const models = require('../../../db/models/index')
-
-// The helper function
-async function filter(arr: any[], callback: any): Promise<any[]> {
-  const fail = Symbol()
-  return (
-    await Promise.all(
-      arr.map(async (item) => ((await callback(item)) ? item : fail))
-    )
-  ).filter((i) => i !== fail)
-}
 
 const handler = nextConnect()
   // Get method
@@ -37,10 +25,10 @@ const handler = nextConnect()
 
     const ownedAssets = await filter(
       assets.rows,
-      async (asset: { address: string; tokenId: any }) => {
+      async (asset: { tokenAddress: string; tokenId: any }) => {
         const provider = new ethers.providers.JsonRpcProvider(rpcURL)
         const tokenContract = new ethers.Contract(
-          asset.address,
+          asset.tokenAddress,
           NFT.abi,
           provider
         )

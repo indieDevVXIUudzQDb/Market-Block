@@ -8,11 +8,11 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER,
       },
-      address: {
-        type: Sequelize.STRING,
-      },
       tokenId: {
         type: Sequelize.NUMBER,
+      },
+      tokenAddress: {
+        type: Sequelize.STRING,
       },
       dateBanned: {
         type: Sequelize.STRING,

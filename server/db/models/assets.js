@@ -13,8 +13,8 @@ module.exports = (sequelize, DataTypes) => {
   }
   assets.init(
     {
-      address: DataTypes.STRING,
       tokenId: DataTypes.NUMBER,
+      tokenAddress: DataTypes.STRING,
       dateBanned: {
         type: DataTypes.STRING,
       },

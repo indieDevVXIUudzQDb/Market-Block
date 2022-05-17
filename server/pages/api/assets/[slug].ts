@@ -24,7 +24,7 @@ const handler = nextConnect()
       // @ts-ignore
       body,
     } = req
-    const { address, tokenId } = body
+    const { tokenAddress, tokenId } = body
     let status = 'success',
       statusCode = 200,
       error = '',
@@ -32,7 +32,7 @@ const handler = nextConnect()
 
     try {
       newAsset = await models.assets.create({
-        address,
+        tokenAddress,
         tokenId,
       })
     } catch (err) {
