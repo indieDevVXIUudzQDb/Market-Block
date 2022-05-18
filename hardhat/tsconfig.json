@@ -5,8 +5,9 @@
     "strict": true,
     "esModuleInterop": true,
     "outDir": "dist",
-    "declaration": true
+    "resolveJsonModule": true
   },
-  "include": ["./scripts", "./test", "./typechain"],
+  "exclude": ["dist", "node_modules"],
+  "include": ["./test", "./src", "./scripts"],
   "files": ["./hardhat.config.ts"]
 }

@@ -21,4 +21,12 @@ module.exports = {
       { ignores: ["modules"] },
     ],
   },
+  settings: {
+    "import/resolver": {
+      node: {
+        extensions: [".ts", ".tsx"],
+        moduleDirectory: ["src", "node_modules"],
+      },
+    },
+  },
 };
