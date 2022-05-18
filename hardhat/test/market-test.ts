@@ -1,6 +1,3 @@
-// const chai = require("chai");
-// const { ethers } = require("hardhat");
-// const deepEqualInAnyOrder = require("deep-equal-in-any-order");
 import { ethers } from "hardhat";
 import chai from "chai";
 
