@@ -1,7 +1,7 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
@@ -62,10 +62,12 @@ contract Market is ReentrancyGuard {
     function createMarketItem(
         address nftContract,
         uint256 tokenId,
-        uint256 price
+        uint256 price,
+        uint256 amount,
+        bytes memory data
     ) public payable nonReentrant {
         console.log("Creating Market Item:", nftContract, tokenId, price);
-        bool supported = IERC721(nftContract).supportsInterface(type(IERC721).interfaceId);
+        bool supported = IERC1155(nftContract).supportsInterface(type(IERC1155).interfaceId);
         require(supported == true);
         require(price > 0, "Price must be at least 1 wei");
         require(msg.value == listingPrice, "Price must be equal to listing price");
@@ -82,13 +84,15 @@ contract Market is ReentrancyGuard {
             price,
             AvailabilityStatus.AVAILABLE
         );
-        IERC721(nftContract).transferFrom(msg.sender, address(this), tokenId);
+        IERC1155(nftContract).safeTransferFrom(msg.sender, address(this), tokenId, amount, data);
 
         emit MarketItemCreated(itemId, nftContract, tokenId, msg.sender, address(0), price, AvailabilityStatus.AVAILABLE);
     }
 
     function createMarketSale(
-        uint256 itemId
+        uint256 itemId,
+        uint256 amount,
+        bytes memory data
     ) public payable nonReentrant {
         uint price = idToMarketItem[itemId].price;
         uint tokenId = idToMarketItem[itemId].tokenId;
@@ -97,7 +101,7 @@ contract Market is ReentrancyGuard {
 
         idToMarketItem[itemId].seller.transfer(msg.value);
         address nftContract = idToMarketItem[itemId].nftContract;
-        IERC721(nftContract).transferFrom(address(this), msg.sender, tokenId);
+        IERC1155(nftContract).safeTransferFrom(address(this), msg.sender, tokenId, amount, data);
         idToMarketItem[itemId].owner = payable(msg.sender);
         idToMarketItem[itemId].status = AvailabilityStatus.SOLD;
         _itemsSold.increment();
@@ -106,14 +110,14 @@ contract Market is ReentrancyGuard {
 
     }
 
-    function cancelMarketItem(uint256 itemId) public {
+    function cancelMarketItem(uint256 itemId, uint256 amount, bytes memory data) public {
         address seller = idToMarketItem[itemId].seller;
-        require( seller == msg.sender, "Only item seller can cancel a market listing.");
+        require(seller == msg.sender, "Only item seller can cancel a market listing.");
         require(idToMarketItem[itemId].status != AvailabilityStatus.SOLD, "This item has already been sold");
         require(idToMarketItem[itemId].status != AvailabilityStatus.CANCELLED, "This item sale has already been cancelled");
         uint256 tokenId = idToMarketItem[itemId].tokenId;
         address nftContract = idToMarketItem[itemId].nftContract;
-        IERC721(nftContract).transferFrom(address(this), idToMarketItem[itemId].seller, tokenId);
+        IERC1155(nftContract).safeTransferFrom(address(this), idToMarketItem[itemId].seller, tokenId, amount, data);
         idToMarketItem[itemId].status = AvailabilityStatus.CANCELLED;
 
         emit MarketItemStatusChange(itemId, AvailabilityStatus.CANCELLED);
@@ -137,7 +141,7 @@ contract Market is ReentrancyGuard {
         MarketItem memory item;
         // TODO reverse and return on first match
         for (uint i = 0; i < totalItemCount; i++) {
-            if (idToMarketItem[i + 1].tokenId  == tokenId ) {
+            if (idToMarketItem[i + 1].tokenId == tokenId) {
                 uint currentId = i + 1;
                 MarketItem storage currentItem = idToMarketItem[currentId];
                 // Only keep the most recent
