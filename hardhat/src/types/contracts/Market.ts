@@ -69,6 +69,9 @@ export interface MarketInterface extends utils.Interface {
     "fetchMarketItemsCreated()": FunctionFragment;
     "fetchMyMarketItems()": FunctionFragment;
     "getListingPrice()": FunctionFragment;
+    "onERC1155BatchReceived(address,address,uint256[],uint256[],bytes)": FunctionFragment;
+    "onERC1155Received(address,address,uint256,uint256,bytes)": FunctionFragment;
+    "supportsInterface(bytes4)": FunctionFragment;
     "updateListingPrice(uint256)": FunctionFragment;
   };
 
@@ -84,6 +87,9 @@ export interface MarketInterface extends utils.Interface {
       | "fetchMarketItemsCreated"
       | "fetchMyMarketItems"
       | "getListingPrice"
+      | "onERC1155BatchReceived"
+      | "onERC1155Received"
+      | "supportsInterface"
       | "updateListingPrice"
   ): FunctionFragment;
 
@@ -128,6 +134,18 @@ export interface MarketInterface extends utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
+    functionFragment: "onERC1155BatchReceived",
+    values: [string, string, BigNumberish[], BigNumberish[], BytesLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "onERC1155Received",
+    values: [string, string, BigNumberish, BigNumberish, BytesLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "supportsInterface",
+    values: [BytesLike]
+  ): string;
+  encodeFunctionData(
     functionFragment: "updateListingPrice",
     values: [BigNumberish]
   ): string;
@@ -170,6 +188,18 @@ export interface MarketInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "getListingPrice",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "onERC1155BatchReceived",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "onERC1155Received",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "supportsInterface",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -294,6 +324,29 @@ export interface Market extends BaseContract {
 
     getListingPrice(overrides?: CallOverrides): Promise<[BigNumber]>;
 
+    onERC1155BatchReceived(
+      operator: string,
+      from: string,
+      ids: BigNumberish[],
+      values: BigNumberish[],
+      data: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    onERC1155Received(
+      operator: string,
+      from: string,
+      id: BigNumberish,
+      value: BigNumberish,
+      data: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    supportsInterface(
+      interfaceId: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
+
     updateListingPrice(
       _listingPrice: BigNumberish,
       overrides?: PayableOverrides & { from?: string | Promise<string> }
@@ -352,6 +405,29 @@ export interface Market extends BaseContract {
 
   getListingPrice(overrides?: CallOverrides): Promise<BigNumber>;
 
+  onERC1155BatchReceived(
+    operator: string,
+    from: string,
+    ids: BigNumberish[],
+    values: BigNumberish[],
+    data: BytesLike,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  onERC1155Received(
+    operator: string,
+    from: string,
+    id: BigNumberish,
+    value: BigNumberish,
+    data: BytesLike,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  supportsInterface(
+    interfaceId: BytesLike,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
+
   updateListingPrice(
     _listingPrice: BigNumberish,
     overrides?: PayableOverrides & { from?: string | Promise<string> }
@@ -409,6 +485,29 @@ export interface Market extends BaseContract {
     ): Promise<Market.MarketItemStructOutput[]>;
 
     getListingPrice(overrides?: CallOverrides): Promise<BigNumber>;
+
+    onERC1155BatchReceived(
+      operator: string,
+      from: string,
+      ids: BigNumberish[],
+      values: BigNumberish[],
+      data: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<string>;
+
+    onERC1155Received(
+      operator: string,
+      from: string,
+      id: BigNumberish,
+      value: BigNumberish,
+      data: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<string>;
+
+    supportsInterface(
+      interfaceId: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
 
     updateListingPrice(
       _listingPrice: BigNumberish,
@@ -493,6 +592,29 @@ export interface Market extends BaseContract {
 
     getListingPrice(overrides?: CallOverrides): Promise<BigNumber>;
 
+    onERC1155BatchReceived(
+      operator: string,
+      from: string,
+      ids: BigNumberish[],
+      values: BigNumberish[],
+      data: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    onERC1155Received(
+      operator: string,
+      from: string,
+      id: BigNumberish,
+      value: BigNumberish,
+      data: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    supportsInterface(
+      interfaceId: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     updateListingPrice(
       _listingPrice: BigNumberish,
       overrides?: PayableOverrides & { from?: string | Promise<string> }
@@ -549,6 +671,29 @@ export interface Market extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     getListingPrice(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    onERC1155BatchReceived(
+      operator: string,
+      from: string,
+      ids: BigNumberish[],
+      values: BigNumberish[],
+      data: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    onERC1155Received(
+      operator: string,
+      from: string,
+      id: BigNumberish,
+      value: BigNumberish,
+      data: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    supportsInterface(
+      interfaceId: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
 
     updateListingPrice(
       _listingPrice: BigNumberish,

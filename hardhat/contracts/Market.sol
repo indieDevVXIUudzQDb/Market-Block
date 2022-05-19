@@ -2,12 +2,13 @@
 pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
+import "@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 import "hardhat/console.sol";
 
-contract Market is ReentrancyGuard {
+contract Market is IERC1155Receiver, ReentrancyGuard {
     using Counters for Counters.Counter;
     Counters.Counter private _itemIds;
     Counters.Counter private _itemsSold;
@@ -47,6 +48,31 @@ contract Market is ReentrancyGuard {
     constructor(uint256 _listingPrice){
         owner = payable(msg.sender);
         listingPrice = _listingPrice;
+    }
+
+    function onERC1155Received(
+        address operator,
+        address from,
+        uint256 id,
+        uint256 value,
+        bytes calldata data
+    ) external override returns (bytes4){
+        return bytes4(keccak256("onERC1155Received(address,address,uint256,uint256,bytes)"));
+    }
+
+    function onERC1155BatchReceived(
+        address operator,
+        address from,
+        uint256[] calldata ids,
+        uint256[] calldata values,
+        bytes calldata data
+    ) external override returns (bytes4){
+        return bytes4(keccak256("onERC1155Received(address,address,uint256,uint256,bytes)"));
+    }
+
+    function supportsInterface(bytes4 interfaceId) external view override returns (bool){
+        bool supported = interfaceId == type(IERC1155).interfaceId;
+        return supported;
     }
 
     function getListingPrice() public view returns (uint256){
