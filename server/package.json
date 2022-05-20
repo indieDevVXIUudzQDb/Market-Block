@@ -3,7 +3,9 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "db-migrate": "rm db/database.sqlite && sequelize db:migrate",
+    "db-reset": "rm db/database.sqlite && sequelize db:migrate"
   },
   "dependencies": {
     "@mantine/core": "^4.2.2",

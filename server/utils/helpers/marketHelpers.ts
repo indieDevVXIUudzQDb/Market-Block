@@ -1,5 +1,5 @@
 import { ethers } from 'ethers'
-import { rpcURL } from '../constants/config'
+import { ipfsFileURL, rpcURL } from '../constants/config'
 import NFT from '../../artifacts/contracts/NFT.sol/NFT.json'
 import Market from '../../artifacts/contracts/MARKET.sol/Market.json'
 import axios from 'axios'
@@ -8,6 +8,23 @@ import { JsonRpcSigner } from '@ethersproject/providers'
 import { Web3State } from '../../hooks/useWeb3State'
 import { DigitalItem, MarketItem } from '../../pages/item/[...slug]'
 import { marketAddress, nftAddress } from '../constants/contracts'
+import { Market as IMarket, NFT as INFT } from '../../types'
+import { toast } from 'react-hot-toast'
+import { toastConfig } from '../constants/toastConfig'
+
+export const activeSigner = async (web3State: Web3State) => {
+  let signer: JsonRpcSigner
+  // @ts-ignore
+  try {
+    await web3State.connectWallet()
+    // @ts-ignore
+    signer = web3State.provider.getSigner()
+    signer.getAddress()
+  } catch (e) {
+    throw new Error('Wallet not ready or not available')
+  }
+  return signer
+}
 
 export const loadMarketItemUtil = async (
   tokenId: number,
@@ -15,16 +32,20 @@ export const loadMarketItemUtil = async (
   web3State: Web3State
 ) => {
   const provider = new ethers.providers.JsonRpcProvider(rpcURL)
-  const tokenContract = new ethers.Contract(tokenAddress, NFT.abi, provider)
-  const marketContract = new ethers.Contract(
+  const tokenContract: INFT = new ethers.Contract(
+    tokenAddress,
+    NFT.abi,
+    provider
+  ) as INFT
+  const marketContract: IMarket = new ethers.Contract(
     marketAddress,
     Market.abi,
     provider
-  )
+  ) as IMarket
 
   let marketData, meta, tokenUri
   try {
-    tokenUri = await tokenContract.tokenURI(tokenId)
+    tokenUri = await tokenContract.uri(tokenId)
     meta = await axios.get(tokenUri)
     // This a new item with no market history
     marketData = await marketContract.fetchMarketItemByTokenId(tokenId)
@@ -34,16 +55,14 @@ export const loadMarketItemUtil = async (
     }
   }
 
-  let approved,
-    isApproved = false,
+  let isApproved = false,
     balance,
     isOwner = false
   try {
-    approved = await tokenContract.getApproved(tokenId)
-    isApproved = marketAddress.toLowerCase() === approved.toLowerCase()
+    isApproved = await tokenContract.isApprovedForAll(marketAddress, 'true')
     let balanceResult
     if (web3State.address) {
-      balanceResult = await tokenContract.balanceOf(web3State.address)
+      balanceResult = await tokenContract.balanceOf(web3State.address, tokenId)
     }
     if (balanceResult) {
       balance = balanceResult.toNumber()
@@ -76,11 +95,11 @@ export const loadMarketItemUtil = async (
       image: meta.data.image as string,
       name: meta.data.name as string,
       description: meta.data.description as string,
+      // @ts-ignore
       tokenUri,
       isOwner,
       isApproved,
       meta,
-      sold: marketData.sold,
       available: marketData.status === 0,
     }
     // console.log({ marketItem })
@@ -92,6 +111,7 @@ export const loadMarketItemUtil = async (
       image: meta.data.image as string,
       name: meta.data.name as string,
       description: meta.data.description as string,
+      // @ts-ignore
       tokenUri,
       isApproved,
       meta,
@@ -124,11 +144,21 @@ export const buyMarketItemUtil = async (
   const provider = new ethers.providers.Web3Provider(connection)
 
   const signer = provider.getSigner()
-  const contract = new ethers.Contract(marketAddress, Market.abi, signer)
+  const contract: IMarket = new ethers.Contract(
+    marketAddress,
+    Market.abi,
+    signer
+  ) as IMarket
   const price = ethers.utils.parseUnits(marketItem.price.toString(), 'ether')
-  const transaction = await contract.createMarketSale(marketItem.itemId, {
-    value: price,
-  })
+  const transaction = await contract.createMarketSale(
+    marketItem.itemId,
+    //TODO amount
+    1,
+    ethers.utils.toUtf8Bytes(''),
+    {
+      value: price,
+    }
+  )
   await transaction.wait()
   // console.log({ transaction })
 }
@@ -138,26 +168,23 @@ export const sellItemUtil = async (
   salePrice: string,
   web3State: Web3State
 ) => {
-  let signer: JsonRpcSigner
-  // @ts-ignore
-  try {
-    await web3State.connectWallet()
-    // @ts-ignore
-    signer = web3State.provider.getSigner()
-    signer.getAddress()
-  } catch (e) {
-    throw new Error('Wallet not ready or not available')
-  }
-
+  const signer = await activeSigner(web3State)
   //Create Market Item
   const price = ethers.utils.parseUnits(salePrice, 'ether')
-  const marketContract = new ethers.Contract(marketAddress, Market.abi, signer)
+  const marketContract: IMarket = new ethers.Contract(
+    marketAddress,
+    Market.abi,
+    signer
+  ) as IMarket
   const listPriceResult = await marketContract.getListingPrice()
   const listingPrice = listPriceResult.toString()
   const marketTransaction = await marketContract.createMarketItem(
     nftAddress,
     digitalItem.tokenId,
     price,
+    //TODO amount
+    1,
+    ethers.utils.toUtf8Bytes(''),
     { value: listingPrice }
   )
   await marketTransaction.wait()
@@ -180,9 +207,15 @@ export const cancelMarketSaleUtil = async (
   }
 
   //Create Market Item
-  const marketContract = new ethers.Contract(marketAddress, Market.abi, signer)
+  const marketContract: IMarket = new ethers.Contract(
+    marketAddress,
+    Market.abi,
+    signer
+  ) as IMarket
   const marketTransaction = await marketContract.cancelMarketItem(
-    marketItem.itemId
+    marketItem.itemId,
+    1,
+    ethers.utils.toUtf8Bytes('')
   )
   await marketTransaction.wait()
   return marketTransaction
@@ -205,12 +238,97 @@ export const approveMarketSaleUtil = async (
   }
 
   //Create Market Item
-  const tokenContract = new ethers.Contract(nftAddress, NFT.abi, signer)
-  const approveTransaction = await tokenContract.approve(
+  const tokenContract: INFT = new ethers.Contract(
+    nftAddress,
+    NFT.abi,
+    signer
+  ) as INFT
+  const approveTransaction = await tokenContract.setApprovalForAll(
     marketAddress,
-    digitalItem.tokenId
+    true
   )
 
   await approveTransaction.wait()
   // console.log({ approveTransaction })
+}
+
+export const createAssetUtil = async (
+  ipfsURL: string,
+  signer: JsonRpcSigner,
+  baseApiUrl: string
+) => {
+  // Create NFT
+  const contract: INFT = new ethers.Contract(
+    nftAddress,
+    NFT.abi,
+    signer
+  ) as INFT
+  const nftTransaction = await contract.createToken(
+    ipfsURL,
+    1,
+    ethers.utils.toUtf8Bytes('')
+  )
+  const nftTx = await nftTransaction.wait()
+  console.log({ nftTx })
+  // @ts-ignore
+  const event = nftTx.events[0]
+  // @ts-ignore
+  const value = event.args.id
+  const tokenId = value.toNumber()
+  console.log({ tokenId })
+
+  const jobApi = await fetch(`${baseApiUrl}/assets/[slug]`, {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      tokenId,
+      tokenAddress: nftAddress,
+    }),
+  })
+
+  let result = await jobApi.json()
+  if (
+    result.status === 'success' &&
+    result.message &&
+    result.message === 'done' &&
+    result.data
+  ) {
+    return tokenId
+  } else {
+    return null
+  }
+}
+
+export const createMarketListingUtil = async (
+  tokenId: string,
+  salePrice: string,
+  signer: JsonRpcSigner
+) => {
+  console.log('createMarketItem called', tokenId)
+  // @ts-ignore
+  //Create Market Item
+  const price = ethers.utils.parseUnits(salePrice, 'ether')
+  const marketContract: IMarket = new ethers.Contract(
+    marketAddress,
+    Market.abi,
+    signer
+  ) as IMarket
+  const listPriceResult = await marketContract.getListingPrice()
+  const listingPrice = listPriceResult.toString()
+  // console.log({ tokenId, price, listingPrice, salePrice })
+  const marketTransaction = await marketContract.createMarketItem(
+    nftAddress,
+    tokenId,
+    price,
+    //TODO
+    1,
+    ethers.utils.toUtf8Bytes(''),
+    { value: listingPrice }
+  )
+  await marketTransaction.wait()
+  console.log({ marketTransaction })
+  return true
 }

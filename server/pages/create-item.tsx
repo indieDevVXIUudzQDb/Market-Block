@@ -36,6 +36,11 @@ import { useWeb3State, Web3State } from '../hooks/useWeb3State'
 import { CURRENCY_NAME } from '../utils/constants/constants'
 import { absoluteUrl } from '../middleware/utils'
 import { marketAddress, nftAddress } from '../utils/constants/contracts'
+import {
+  activeSigner,
+  createAssetUtil,
+  createMarketListingUtil,
+} from '../utils/helpers/marketHelpers'
 
 const client = ipfsHttpClient({ url: `${ipfsAPIURL}` })
 
@@ -154,25 +159,15 @@ const CreateItem: (props: { baseApiUrl: string }) => JSX.Element = (props: {
     }
   }
 
-  const createItem = async (formValues: {
+  const createAsset = async (formValues: {
     name?: string
     description?: string
     listForSale?: boolean
     price?: string
   }) => {
-    const { name, description, price, listForSale } = formValues
-    const fileCount = fileArrayBuffers.length + 1
-    let signer
     try {
-      // @ts-ignore
-      try {
-        await web3State.connectWallet()
-        // @ts-ignore
-        signer = web3State.provider.getSigner()
-        signer.getAddress()
-      } catch (e) {
-        throw new Error('Wallet not ready or not available')
-      }
+      const { name, description, price, listForSale } = formValues
+      const signer = await activeSigner(web3State)
       // Image to IPFS
       await setUploadingImage(true)
       const imageAdded = await client.add(imageArrayBuffer, {
@@ -243,43 +238,15 @@ const CreateItem: (props: { baseApiUrl: string }) => JSX.Element = (props: {
       const ipfsURL = `${ipfsFileURL}${dataAdded.path}`
       console.log({ ipfsURL })
 
-      // Create NFT
-      const contract = new ethers.Contract(nftAddress, NFT.abi, signer)
-      const nftTransaction = await contract.createToken(ipfsURL)
-      const nftTx = await nftTransaction.wait()
-
-      const event = nftTx.events[0]
-      const value = event.args[2]
-      const tokenId = value.toNumber()
-      console.log({ tokenId })
-
-      const jobApi = await fetch(`${baseApiUrl}/assets/[slug]`, {
-        method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          tokenId,
-          tokenAddress: nftAddress,
-        }),
-      })
-
-      let result = await jobApi.json()
-      if (
-        result.status === 'success' &&
-        result.message &&
-        result.message === 'done' &&
-        result.data
-      ) {
+      const tokenId = await createAssetUtil(ipfsURL, signer, baseApiUrl)
+      if (tokenId) {
         toast.success('Item Created Successfully', toastConfig)
       } else {
         toast.error('Something went wrong', toastConfig)
       }
 
       if (listForSale) {
-        // @ts-ignore
-        await createMarketItem(tokenId, price)
+        await createMarketListing(tokenId, price || '0')
       }
     } catch (e) {
       // @ts-ignore
@@ -291,36 +258,24 @@ const CreateItem: (props: { baseApiUrl: string }) => JSX.Element = (props: {
     }
   }
 
-  const createMarketItem = async (tokenId: string, salePrice: string) => {
+  const createMarketListing = async (tokenId: string, salePrice: string) => {
     try {
       console.log('createMarketItem called', tokenId)
-      // @ts-ignore
-      const signer = web3State.provider.getSigner()
+      const signer = await activeSigner(web3State)
       //Create Market Item
-      const price = ethers.utils.parseUnits(salePrice, 'ether')
-      const marketContract = new ethers.Contract(
-        marketAddress,
-        Market.abi,
-        signer
-      )
-      const listPriceResult = await marketContract.getListingPrice()
-      const listingPrice = listPriceResult.toString()
-      // console.log({ tokenId, price, listingPrice, salePrice })
-      const marketTransaction = await marketContract.createMarketItem(
-        nftAddress,
-        tokenId,
-        price,
-        { value: listingPrice }
-      )
-      await marketTransaction.wait()
-      console.log({ marketTransaction })
-      toast.success('Market Item Listed Successfully', toastConfig)
+      const created = await createMarketListingUtil(tokenId, salePrice, signer)
+      if (created) {
+        toast.success('Market Item Listed Successfully', toastConfig)
+      } else {
+        throw new Error('Something went wrong')
+      }
       resetPage()
     } catch (e) {
       console.error(e)
       toast.error('Something went wrong', toastConfig)
     }
   }
+
   const resetPage = () => {
     form.reset()
     setFiles([])
@@ -331,7 +286,7 @@ const CreateItem: (props: { baseApiUrl: string }) => JSX.Element = (props: {
   return (
     <Layout web3State={web3State}>
       <Box sx={{ maxWidth: 800 }} mx="auto">
-        <form onSubmit={form.onSubmit((values) => createItem(values))}>
+        <form onSubmit={form.onSubmit((values) => createAsset(values))}>
           <TextInput required label="Name" {...form.getInputProps('name')} />
           <TextInput
             required
