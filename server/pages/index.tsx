@@ -39,7 +39,7 @@ const Home: (props: {
       } catch (e) {
         console.error(e)
       }
-
+      console.log({ assets })
       const results = await loadMarketItemsUtil(assets, web3State)
       console.log({ results })
       setMarketItems(results)

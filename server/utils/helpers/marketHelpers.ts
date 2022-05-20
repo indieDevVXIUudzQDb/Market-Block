@@ -1,5 +1,5 @@
 import { ethers } from 'ethers'
-import { ipfsFileURL, rpcURL } from '../constants/config'
+import { rpcURL } from '../constants/config'
 import NFT from '../../artifacts/contracts/NFT.sol/NFT.json'
 import Market from '../../artifacts/contracts/MARKET.sol/Market.json'
 import axios from 'axios'
@@ -9,8 +9,6 @@ import { Web3State } from '../../hooks/useWeb3State'
 import { DigitalItem, MarketItem } from '../../pages/item/[...slug]'
 import { marketAddress, nftAddress } from '../constants/contracts'
 import { Market as IMarket, NFT as INFT } from '../../types'
-import { toast } from 'react-hot-toast'
-import { toastConfig } from '../constants/toastConfig'
 
 export const activeSigner = async (web3State: Web3State) => {
   let signer: JsonRpcSigner
@@ -42,7 +40,6 @@ export const loadMarketItemUtil = async (
     Market.abi,
     provider
   ) as IMarket
-
   let marketData, meta, tokenUri
   try {
     tokenUri = await tokenContract.uri(tokenId)
@@ -59,7 +56,6 @@ export const loadMarketItemUtil = async (
     balance,
     isOwner = false
   try {
-    isApproved = await tokenContract.isApprovedForAll(marketAddress, 'true')
     let balanceResult
     if (web3State.address) {
       balanceResult = await tokenContract.balanceOf(web3State.address, tokenId)
@@ -72,7 +68,7 @@ export const loadMarketItemUtil = async (
     console.error(e)
   }
 
-  if (marketData) {
+  if (marketData && marketData.status === 0) {
     let price = ethers.utils.formatUnits(marketData.price.toString(), 'ether')
     try {
       if (
@@ -80,6 +76,8 @@ export const loadMarketItemUtil = async (
         web3State.address
       ) {
         isOwner = marketData.seller.toLowerCase() === web3State.address
+      }
+      if (isOwner) {
       }
     } catch (e) {
       console.error(e)
@@ -102,9 +100,15 @@ export const loadMarketItemUtil = async (
       meta,
       available: marketData.status === 0,
     }
-    // console.log({ marketItem })
+    console.log({ marketItem })
     return marketItem
   } else {
+    if (isOwner && web3State.address) {
+      isApproved = await tokenContract.isApprovedForAll(
+        web3State.address,
+        marketAddress
+      )
+    }
     let digitalItem: DigitalItem = {
       tokenId,
       tokenAddress,
@@ -117,7 +121,7 @@ export const loadMarketItemUtil = async (
       meta,
       isOwner,
     }
-    // console.log({ digitalItem })
+    console.log({ digitalItem })
     return digitalItem
   }
 }

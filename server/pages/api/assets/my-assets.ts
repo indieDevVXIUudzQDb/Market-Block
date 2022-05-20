@@ -5,6 +5,7 @@ import NFT from '../../../artifacts/contracts/NFT.sol/NFT.json'
 import Market from '../../../artifacts/contracts/MARKET.sol/Market.json'
 import { filter } from '../../../utils/helpers/common'
 import { marketAddress } from '../../../utils/constants/contracts'
+import { Market as IMarket, NFT as INFT } from '../../../types'
 
 const models = require('../../../db/models/index')
 
@@ -27,28 +28,39 @@ const handler = nextConnect()
       assets.rows,
       async (asset: { tokenAddress: string; tokenId: any }) => {
         const provider = new ethers.providers.JsonRpcProvider(rpcURL)
-        const tokenContract = new ethers.Contract(
+        const tokenContract: INFT = new ethers.Contract(
           asset.tokenAddress,
           NFT.abi,
           provider
-        )
-        const marketContract = new ethers.Contract(
+        ) as INFT
+        const marketContract: IMarket = new ethers.Contract(
           marketAddress,
           Market.abi,
           provider
-        )
+        ) as IMarket
         const marketItem = await marketContract.fetchMarketItemByTokenId(
           asset.tokenId
         )
-        let owner
+        let owner,
+          isOwner = false
         if (marketItem && marketItem.status === 0) {
           owner = marketItem.seller
+          isOwner = owner.toLowerCase() === queryAddress.toLowerCase()
         } else {
-          owner = await tokenContract.ownerOf(asset.tokenId)
+          let balanceResult
+          if (queryAddress) {
+            balanceResult = await tokenContract.balanceOf(
+              queryAddress,
+              asset.tokenId
+            )
+          }
+          if (balanceResult) {
+            let balance = balanceResult.toNumber()
+            isOwner = balance > 0
+          }
         }
-        console.log('owner', owner, 'address', queryAddress)
-        console.log(owner.toLowerCase() === queryAddress.toLowerCase())
-        return owner.toLowerCase() === queryAddress.toLowerCase()
+        // console.log('owner', owner, 'address', queryAddress)
+        return isOwner
       }
     )
 

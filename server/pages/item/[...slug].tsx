@@ -53,7 +53,7 @@ export const isMarketItem = (object: any): object is MarketItem => {
 const ItemDetail: NextPage = () => {
   const router = useRouter()
   const { slug } = router.query
-  console.log({ router })
+  // console.log({ router })
   const web3State: Web3State = useWeb3State()
 
   const [item, setItem] = useState<DigitalItem | MarketItem | null>()
@@ -81,8 +81,7 @@ const ItemDetail: NextPage = () => {
           throw new Error('tokenId is NAN')
         }
         setLoading(true)
-        //TODO
-        console.log({ tokenId, tokenAddress })
+        // console.log({ tokenId, tokenAddress })
         let loaded = await loadMarketItemUtil(tokenId, tokenAddress, web3State)
         setItem(loaded)
         setLoading(false)
@@ -230,10 +229,7 @@ const ItemDetail: NextPage = () => {
                   </Button>
                   <div />
                 </Group>
-              ) : item &&
-                isMarketItem(item) &&
-                item.isOwner &&
-                item.isApproved ? (
+              ) : item && item.isOwner && item.isApproved ? (
                 <Group position={'left'} grow>
                   <Button
                     onClick={() => {
