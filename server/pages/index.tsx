@@ -1,4 +1,4 @@
-import { SimpleGrid } from '@mantine/core'
+import { Box, SimpleGrid, useMantineTheme } from '@mantine/core'
 import { useEffect, useState } from 'react'
 import { Layout } from '../components/Layout'
 import { MarketItemCard } from '../components/MarketItemCard'
@@ -19,7 +19,7 @@ const Home: (props: {
   )
   const [loading, setLoading] = useState<boolean>(false)
   const web3State: Web3State = useWeb3State()
-
+  const theme = useMantineTheme()
   const loadItems = async () => {
     try {
       setLoading(true)
@@ -57,20 +57,31 @@ const Home: (props: {
       {!loading && !marketItems.length ? (
         <p>No assets available in the market</p>
       ) : !loading && marketItems.length ? (
-        <SimpleGrid
-          cols={3}
-          spacing="lg"
-          breakpoints={[
-            { maxWidth: 980, cols: 2, spacing: 'md' },
-            { maxWidth: 755, cols: 1, spacing: 'sm' },
-            { maxWidth: 600, cols: 1, spacing: 'sm' },
-          ]}
-          style={{ marginLeft: '3em' }}
+        <Box
+          sx={{
+            maxWidth: 1200,
+            padding: theme.spacing.xl,
+            borderRadius: theme.radius.md,
+            cursor: 'pointer',
+            marginBottom: '20%',
+          }}
+          mx="auto"
         >
-          {marketItems.map((item: DigitalItem, index) => (
-            <MarketItemCard key={index} item={item} />
-          ))}
-        </SimpleGrid>
+          <SimpleGrid
+            cols={3}
+            spacing="xl"
+            breakpoints={[
+              { maxWidth: 980, cols: 2, spacing: 'md' },
+              { maxWidth: 755, cols: 1, spacing: 'sm' },
+              { maxWidth: 600, cols: 1, spacing: 'sm' },
+            ]}
+            style={{ marginLeft: '3em', marginTop: '3em' }}
+          >
+            {marketItems.map((item: DigitalItem, index) => (
+              <MarketItemCard key={index} item={item} />
+            ))}
+          </SimpleGrid>
+        </Box>
       ) : null}
       <div style={{ minHeight: '1000px' }}></div>
     </Layout>

@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { textShortener } from '../utils/utils'
 import { LOGO_URL } from '../utils/constants/constants'
 import { DigitalItem } from '../pages/item/[...slug]'
+import { rgba } from '@mantine/styles/lib/theme/functions/fns/rgba/rgba'
 
 interface Props {
   item: DigitalItem
@@ -16,7 +17,13 @@ export const MarketItemCard = (props: Props) => {
 
   return (
     <div style={{}}>
-      <Card shadow="sm" p="lg">
+      <Card
+        shadow="sm"
+        p="lg"
+        style={{
+          backgroundColor: 'rgba(255, 255, 255, 0.8)',
+        }}
+      >
         <Card.Section>
           <div style={{ textAlign: 'center' }}>
             <Image
@@ -38,11 +45,11 @@ export const MarketItemCard = (props: Props) => {
         </Card.Section>
 
         <Group position="apart" style={{ marginBottom: 5 }}>
-          <Title align={'center'} order={3}>
+          <Title align={'center'} order={3} className={'text-blue-500'}>
             {name}
           </Title>
         </Group>
-        {textShortener(description, 200)}
+        <p className={'text-blue-500'}>{textShortener(description, 200)}</p>
         <Link href={`/item/${item.tokenAddress}/${item.tokenId}`}>
           <Group position="apart" style={{ marginBottom: 5 }}>
             <Button

@@ -9,6 +9,7 @@ export const Layout = (props: { children: any; web3State: Web3State }) => {
     <AppShell
       padding="md"
       header={<SiteHeader web3State={props.web3State} />}
+      fixed
       styles={(theme) => ({
         main: {
           // backgroundColor:

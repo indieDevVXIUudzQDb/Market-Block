@@ -21,7 +21,7 @@ export const SiteHeader = (props: { web3State: Web3State }) => {
       <Group position={'apart'}>
         <div></div>
         <div>
-          <Title className={'text-white'}>{SITE_NAME}</Title>
+          <Title className={'text-blue-500'}>{SITE_NAME}</Title>
         </div>
         {address ? (
           <Button

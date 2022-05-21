@@ -25,4 +25,5 @@ Deploy it to the cloud with [Vercel](https://vercel.com/new?utm_source=github&ut
 
 ## Credits
 Wallpaper
-https://unsplash.com/photos/T9rKvI3N0NM?utm_source=unsplash&utm_medium=referral&utm_content=creditShareLink
+Modified version of the below animation:
+https://codepen.io/marianab/pen/XPOQaR

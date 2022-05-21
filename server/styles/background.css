@@ -2,10 +2,25 @@
 .store-container {
   line-height:0;
   margin-top: 5%;
-  margin-left: 10%;
-  width: 80%;
-  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 50%;
+  max-width: 500px;
+  /*height: 90%;*/
+  position: fixed;
   opacity: 0.5;
+  -webkit-transform: scaleX(-1);
+color: #0005ff;
+}
+.store-container-sky {
+  line-height:0;
+  margin-top: 5%;
+
+  width: 100%;
+  /*height: 90%;*/
+  position: fixed;
+  opacity: 0.5;
+color: #0005ff;
 }
 .stroke {
   stroke: #0170bb;
@@ -20,22 +35,22 @@
   animation: fadeIn 0.8s ease-in;
 }
 .border-animation {
-  background-color: white;
-  border-radius: 10px;
-  position: relative;
+  /*background-color: white;*/
+  /*border-radius: 10px;*/
+  /*position: relative;*/
 }
 .border-animation:after {
-  content: "";
-  background: linear-gradient(45deg, #ccc 48.9%, #0170bb 49%);
-  background-size: 300% 300%;
-  border-radius: 10px;
-  position: absolute;
-  top: -5px;
-  left: -5px;
-  height: calc(100% + 10px);
-  width: calc(100% + 10px);
-  z-index: -1;
-  animation: borderGradient 8s linear both infinite;
+  /*content: "";*/
+  /*background: linear-gradient(45deg, #ccc 48.9%, #0170bb 49%);*/
+  /*background-size: 300% 300%;*/
+  /*border-radius: 10px;*/
+  /*position: absolute;*/
+  /*top: -5px;*/
+  /*left: -5px;*/
+  /*height: calc(100% + 10px);*/
+  /*width: calc(100% + 10px);*/
+  /*z-index: -1;*/
+  /*animation: borderGradient 8s linear both infinite;*/
 }
 @keyframes borderGradient {
   0%,
@@ -78,6 +93,8 @@
 }
 #sign {
   transform-origin: 837px 597px;
+  -webkit-transform: scaleX(-1);
+
   animation: pendulum 1.5s 2s ease-in-out alternate;
 }
 .trees {
@@ -157,10 +174,10 @@
 .box,
 .parachute {
   transform-origin: 430px 100px;
-  animation: moveBox 14s 4s linear forwards infinite;
+  animation: moveBox 8s 4s linear forwards infinite;
 }
 .parachute {
-  animation: parachute 14s 4s linear forwards infinite;
+  animation: parachute 8s 4s linear forwards infinite;
 }
 @keyframes moveBox {
   0% {
@@ -238,7 +255,10 @@
   animation: clouds 50s linear backwards infinite;
 }
 .cloud2 {
-  animation: clouds 40s 40s linear backwards infinite;
+  animation: clouds 40s 20s linear backwards infinite;
+}
+.cloud3 {
+  animation: clouds 30s 10s linear backwards infinite;
 }
 .plane {
   animation: clouds 30s linear backwards infinite;
