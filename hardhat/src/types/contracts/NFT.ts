@@ -28,9 +28,11 @@ import type {
 
 export interface NFTInterface extends utils.Interface {
   functions: {
+    "approve(address,uint256,uint256)": FunctionFragment;
     "balanceOf(address,uint256)": FunctionFragment;
     "balanceOfBatch(address[],uint256[])": FunctionFragment;
     "createToken(string,uint256,bytes)": FunctionFragment;
+    "getApproved(address,uint256)": FunctionFragment;
     "isApprovedForAll(address,address)": FunctionFragment;
     "safeBatchTransferFrom(address,address,uint256[],uint256[],bytes)": FunctionFragment;
     "safeTransferFrom(address,address,uint256,uint256,bytes)": FunctionFragment;
@@ -41,9 +43,11 @@ export interface NFTInterface extends utils.Interface {
 
   getFunction(
     nameOrSignatureOrTopic:
+      | "approve"
       | "balanceOf"
       | "balanceOfBatch"
       | "createToken"
+      | "getApproved"
       | "isApprovedForAll"
       | "safeBatchTransferFrom"
       | "safeTransferFrom"
@@ -52,6 +56,10 @@ export interface NFTInterface extends utils.Interface {
       | "uri"
   ): FunctionFragment;
 
+  encodeFunctionData(
+    functionFragment: "approve",
+    values: [string, BigNumberish, BigNumberish]
+  ): string;
   encodeFunctionData(
     functionFragment: "balanceOf",
     values: [string, BigNumberish]
@@ -63,6 +71,10 @@ export interface NFTInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "createToken",
     values: [string, BigNumberish, BytesLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getApproved",
+    values: [string, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "isApprovedForAll",
@@ -86,6 +98,7 @@ export interface NFTInterface extends utils.Interface {
   ): string;
   encodeFunctionData(functionFragment: "uri", values: [BigNumberish]): string;
 
+  decodeFunctionResult(functionFragment: "approve", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "balanceOfBatch",
@@ -93,6 +106,10 @@ export interface NFTInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "createToken",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getApproved",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -118,17 +135,31 @@ export interface NFTInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: "uri", data: BytesLike): Result;
 
   events: {
+    "Approval(address,uint256,uint256)": EventFragment;
     "ApprovalForAll(address,address,bool)": EventFragment;
     "TransferBatch(address,address,address,uint256[],uint256[])": EventFragment;
     "TransferSingle(address,address,address,uint256,uint256)": EventFragment;
     "URI(string,uint256)": EventFragment;
   };
 
+  getEvent(nameOrSignatureOrTopic: "Approval"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ApprovalForAll"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "TransferBatch"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "TransferSingle"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "URI"): EventFragment;
 }
+
+export interface ApprovalEventObject {
+  approved: string;
+  tokenId: BigNumber;
+  amount: BigNumber;
+}
+export type ApprovalEvent = TypedEvent<
+  [string, BigNumber, BigNumber],
+  ApprovalEventObject
+>;
+
+export type ApprovalEventFilter = TypedEventFilter<ApprovalEvent>;
 
 export interface ApprovalForAllEventObject {
   account: string;
@@ -205,6 +236,13 @@ export interface NFT extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
+    approve(
+      operator: string,
+      tokenId: BigNumberish,
+      amount: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
     balanceOf(
       account: string,
       id: BigNumberish,
@@ -223,6 +261,12 @@ export interface NFT extends BaseContract {
       data: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
+
+    getApproved(
+      operator: string,
+      tokenId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
 
     isApprovedForAll(
       account: string,
@@ -262,6 +306,13 @@ export interface NFT extends BaseContract {
     uri(tokenId: BigNumberish, overrides?: CallOverrides): Promise<[string]>;
   };
 
+  approve(
+    operator: string,
+    tokenId: BigNumberish,
+    amount: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   balanceOf(
     account: string,
     id: BigNumberish,
@@ -280,6 +331,12 @@ export interface NFT extends BaseContract {
     data: BytesLike,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
+
+  getApproved(
+    operator: string,
+    tokenId: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
 
   isApprovedForAll(
     account: string,
@@ -319,6 +376,13 @@ export interface NFT extends BaseContract {
   uri(tokenId: BigNumberish, overrides?: CallOverrides): Promise<string>;
 
   callStatic: {
+    approve(
+      operator: string,
+      tokenId: BigNumberish,
+      amount: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     balanceOf(
       account: string,
       id: BigNumberish,
@@ -335,6 +399,12 @@ export interface NFT extends BaseContract {
       tokenURI: string,
       amount: BigNumberish,
       data: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getApproved(
+      operator: string,
+      tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -377,6 +447,17 @@ export interface NFT extends BaseContract {
   };
 
   filters: {
+    "Approval(address,uint256,uint256)"(
+      approved?: string | null,
+      tokenId?: BigNumberish | null,
+      amount?: BigNumberish | null
+    ): ApprovalEventFilter;
+    Approval(
+      approved?: string | null,
+      tokenId?: BigNumberish | null,
+      amount?: BigNumberish | null
+    ): ApprovalEventFilter;
+
     "ApprovalForAll(address,address,bool)"(
       account?: string | null,
       operator?: string | null,
@@ -426,6 +507,13 @@ export interface NFT extends BaseContract {
   };
 
   estimateGas: {
+    approve(
+      operator: string,
+      tokenId: BigNumberish,
+      amount: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
     balanceOf(
       account: string,
       id: BigNumberish,
@@ -443,6 +531,12 @@ export interface NFT extends BaseContract {
       amount: BigNumberish,
       data: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    getApproved(
+      operator: string,
+      tokenId: BigNumberish,
+      overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     isApprovedForAll(
@@ -484,6 +578,13 @@ export interface NFT extends BaseContract {
   };
 
   populateTransaction: {
+    approve(
+      operator: string,
+      tokenId: BigNumberish,
+      amount: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
     balanceOf(
       account: string,
       id: BigNumberish,
@@ -501,6 +602,12 @@ export interface NFT extends BaseContract {
       amount: BigNumberish,
       data: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    getApproved(
+      operator: string,
+      tokenId: BigNumberish,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     isApprovedForAll(

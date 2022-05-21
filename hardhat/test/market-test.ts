@@ -47,11 +47,9 @@ describe("Market", function () {
     const auctionPrice1 = ethers.utils.parseUnits("100", "ether");
     const auctionPrice2 = ethers.utils.parseUnits("200", "ether");
     const auctionPrice3 = ethers.utils.parseUnits("300", "ether");
-    // Create tokens and market items
 
-    // await nft.createToken("https://www.mytokenlocation.com", 1);
+    // Create tokens and market items
     await nft.createToken("https://www.mytokenlocation.com", 1, emptyData);
-    await nft.setApprovalForAll(marketAddress, true);
     await market.createMarketItem(
       nftContractAddress,
       1,
@@ -64,7 +62,6 @@ describe("Market", function () {
     );
 
     await nft.createToken("https://www.mytokenlocation2.com", 1, emptyData);
-    await await nft.setApprovalForAll(marketAddress, true);
     await market.createMarketItem(
       nftContractAddress,
       2,
@@ -77,7 +74,6 @@ describe("Market", function () {
     );
 
     await nft.createToken("https://www.mytokenlocation3.com", 1, emptyData);
-    await await nft.setApprovalForAll(marketAddress, true);
     await market.createMarketItem(
       nftContractAddress,
       3,
@@ -153,7 +149,6 @@ describe("Market", function () {
 
     // Create tokens and market items
     await nft.createToken("https://www.mytokenlocation.com", 1, emptyData);
-    await await nft.setApprovalForAll(marketAddress, true);
     expect(await nft.balanceOf(seller.address, 1)).to.equal(1);
 
     await market.createMarketItem(
@@ -168,6 +163,7 @@ describe("Market", function () {
     );
 
     expect(await nft.balanceOf(seller.address, 1)).to.equal(0);
+    expect(await nft.balanceOf(marketAddress, 1)).to.equal(1);
 
     // Create a sale
     await market
@@ -182,7 +178,7 @@ describe("Market", function () {
     expect(await nft.balanceOf(seller.address, 1)).to.equal(0);
     expect(await nft.balanceOf(buyer1.address, 1)).to.equal(1);
 
-    await nft.connect(buyer1).setApprovalForAll(marketAddress, true);
+    await nft.connect(buyer1).approve(marketAddress, 1, 1);
 
     // Relist item for sale
     await market
@@ -225,9 +221,7 @@ describe("Market", function () {
 
     // Create tokens and market items
     await nft.createToken("https://www.mytokenlocation.com", 1, emptyData);
-    await nft.setApprovalForAll(marketAddress, true);
     expect(await nft.balanceOf(seller.address, 1)).to.equal(1);
-
     await market.createMarketItem(
       nftContractAddress,
       1,
@@ -254,7 +248,7 @@ describe("Market", function () {
     expect(itemResults[0].itemId.toString()).to.equal("1");
 
     // Relist item for sale
-    await nft.connect(buyer1).setApprovalForAll(marketAddress, true);
+    await nft.connect(buyer1).approve(marketAddress, 1, 1);
 
     await market
       .connect(buyer1)
@@ -276,7 +270,7 @@ describe("Market", function () {
     expect(recentMarketItem.status).to.equal(1);
 
     // Relist item for sale for 2nd time
-    await nft.connect(buyer2).setApprovalForAll(marketAddress, true);
+    await nft.connect(buyer2).approve(marketAddress, 1, 1);
 
     await market
       .connect(buyer2)
