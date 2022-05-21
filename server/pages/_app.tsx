@@ -3,6 +3,7 @@ import Head from 'next/head'
 import { MantineProvider } from '@mantine/core'
 
 import '../styles/globals.css'
+import '../styles/background.css'
 import { SITE_NAME } from '../utils/constants/constants'
 
 export default function App(props: AppProps) {
@@ -22,7 +23,7 @@ export default function App(props: AppProps) {
         emotionOptions={{ key: 'mantine', prepend: false }}
         theme={{
           /** Put your mantine theme override here */
-          colorScheme: 'dark',
+          colorScheme: 'light',
           headings: { fontFamily: 'Russo One, sans-serif' },
         }}
       >
