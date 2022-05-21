@@ -33,7 +33,7 @@ export interface DigitalItem {
   description: string
   tokenUri: string
   meta: any
-  isApproved: boolean
+  approvedCount: number
   isOwner: boolean
 }
 
@@ -229,7 +229,7 @@ const ItemDetail: NextPage = () => {
                   </Button>
                   <div />
                 </Group>
-              ) : item && item.isOwner && item.isApproved ? (
+              ) : item && item.isOwner && item.approvedCount > 0 ? (
                 <Group position={'left'} grow>
                   <Button
                     onClick={() => {

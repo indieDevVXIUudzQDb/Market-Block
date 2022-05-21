@@ -52,7 +52,7 @@ export const loadMarketItemUtil = async (
     }
   }
 
-  let isApproved = false,
+  let approvedCount = 0,
     balance,
     isOwner = false
   try {
@@ -96,7 +96,7 @@ export const loadMarketItemUtil = async (
       // @ts-ignore
       tokenUri,
       isOwner,
-      isApproved,
+      approvedCount,
       meta,
       available: marketData.status === 0,
     }
@@ -104,10 +104,11 @@ export const loadMarketItemUtil = async (
     return marketItem
   } else {
     if (isOwner && web3State.address) {
-      isApproved = await tokenContract.isApprovedForAll(
+      const result = await tokenContract.getApproved(
         web3State.address,
         marketAddress
       )
+      approvedCount = result.toNumber()
     }
     let digitalItem: DigitalItem = {
       tokenId,
@@ -117,7 +118,7 @@ export const loadMarketItemUtil = async (
       description: meta.data.description as string,
       // @ts-ignore
       tokenUri,
-      isApproved,
+      approvedCount,
       meta,
       isOwner,
     }
@@ -247,9 +248,11 @@ export const approveMarketSaleUtil = async (
     NFT.abi,
     signer
   ) as INFT
-  const approveTransaction = await tokenContract.setApprovalForAll(
+  const approveTransaction = await tokenContract.approve(
     marketAddress,
-    true
+    digitalItem.tokenId,
+    //TODO amount
+    1
   )
 
   await approveTransaction.wait()
