@@ -1,7 +1,9 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useForm } from '@mantine/form'
 import {
   ActionIcon,
+  Alert,
+  Anchor,
   Box,
   Button,
   Checkbox,
@@ -14,6 +16,7 @@ import {
   useMantineTheme,
 } from '@mantine/core'
 import {
+  AlertCircle,
   Files,
   Icon as TablerIcon,
   Photo,
@@ -22,20 +25,15 @@ import {
   X,
 } from 'tabler-icons-react'
 import { Dropzone, DropzoneStatus, IMAGE_MIME_TYPE } from '@mantine/dropzone'
-
-import { ethers } from 'ethers'
 import { create as ipfsHttpClient } from 'ipfs-http-client'
 import { Layout } from '../components/Layout'
 import { ipfsAPIURL, ipfsFileURL } from '../utils/constants/config'
-import NFT from '../artifacts/contracts/NFT.sol/NFT.json'
-import Market from '../artifacts/contracts/MARKET.sol/Market.json'
 import { toast } from 'react-hot-toast'
 import { toastConfig } from '../utils/constants/toastConfig'
 import { readFileAsync } from '../utils/utils'
 import { useWeb3State, Web3State } from '../hooks/useWeb3State'
 import { CURRENCY_NAME } from '../utils/constants/constants'
 import { absoluteUrl } from '../middleware/utils'
-import { marketAddress, nftAddress } from '../utils/constants/contracts'
 import {
   activeSigner,
   createAssetUtil,
@@ -55,12 +53,14 @@ const CreateItem: (props: { baseApiUrl: string }) => JSX.Element = (props: {
   const [files, setFiles] = useState<(Blob | MediaSource)[]>([])
   const [imageFile, setImageFile] = useState<Blob | MediaSource | null>()
   const [fileArrayBuffers, setFileArrayBuffers] = useState<ArrayBuffer[]>([])
-  const [imageArrayBuffer, setImageArrayBuffer] = useState<ArrayBuffer>(
-    new ArrayBuffer(0)
+  const [imageArrayBuffer, setImageArrayBuffer] = useState<ArrayBuffer | null>(
+    null
   )
   const [imagePreview, setImagePreview] = useState<string | null>()
   const theme = useMantineTheme()
   const web3State: Web3State = useWeb3State()
+  const listItemCheckboxRef = useRef<HTMLInputElement>()
+  const ipfsAwareCheckboxRef = useRef<HTMLInputElement>()
 
   const form = useForm({
     initialValues: {
@@ -68,6 +68,7 @@ const CreateItem: (props: { baseApiUrl: string }) => JSX.Element = (props: {
       description: 'test description',
       price: '100',
       listForSale: true,
+      ipfsAware: false,
     },
   })
   const getIconColor = (status: DropzoneStatus, theme: MantineTheme) => {
@@ -164,34 +165,39 @@ const CreateItem: (props: { baseApiUrl: string }) => JSX.Element = (props: {
     description?: string
     listForSale?: boolean
     price?: string
+    ipfsAware: boolean
   }) => {
+    if (!formValues.ipfsAware) return
     try {
       const { name, description, price, listForSale } = formValues
       const signer = await activeSigner(web3State)
-      // Image to IPFS
-      await setUploadingImage(true)
-      const imageAdded = await client.add(imageArrayBuffer, {
-        progress: async (p) => {
-          // @ts-ignore
-          setUploadFilename(imageFile.name)
-          // @ts-ignore
-          let max = imageFile.size
-          // @ts-ignore
-          const updatedProgress = uploadProgress + (p / max) * 100
+      let imageURL
+      if (imageArrayBuffer) {
+        // Image to IPFS
+        await setUploadingImage(true)
+        const imageAdded = await client.add(imageArrayBuffer, {
+          progress: async (p) => {
+            // @ts-ignore
+            setUploadFilename(imageFile.name)
+            // @ts-ignore
+            let max = imageFile.size
+            // @ts-ignore
+            const updatedProgress = uploadProgress + (p / max) * 100
 
-          console.log({
-            p,
-            max,
-            updatedProgress,
-          })
-          await setUploadProgress(updatedProgress)
-          console.log(`Recieved: ${p}`)
-        },
-      })
-      await setUploadingImage(false)
-      console.log({ imageAdded })
+            console.log({
+              p,
+              max,
+              updatedProgress,
+            })
+            await setUploadProgress(updatedProgress)
+            console.log(`Recieved: ${p}`)
+          },
+        })
+        await setUploadingImage(false)
+        console.log({ imageAdded })
+        imageURL = `${ipfsFileURL}${imageAdded.cid}`
+      }
 
-      const imageURL = `${ipfsFileURL}${imageAdded.cid}`
       await setUploadingFiles(true)
       const fileUrls = await Promise.all(
         fileArrayBuffers?.map(async (f, index) => {
@@ -232,7 +238,6 @@ const CreateItem: (props: { baseApiUrl: string }) => JSX.Element = (props: {
       console.log({ data })
 
       const dataAdded = await client.add(JSON.stringify(data), {
-        //TODO show progress modal
         progress: (p) => console.log(`Recieved: ${p}`),
       })
       const ipfsURL = `${ipfsFileURL}${dataAdded.path}`
@@ -285,27 +290,64 @@ const CreateItem: (props: { baseApiUrl: string }) => JSX.Element = (props: {
 
   return (
     <Layout web3State={web3State}>
-      <Box sx={{ maxWidth: 800 }} mx="auto">
+      <Box
+        sx={{
+          maxWidth: 600,
+          backgroundColor:
+            theme.colorScheme === 'dark'
+              ? theme.colors.dark[6]
+              : theme.colors.gray[0],
+          // textAlign: 'center',
+          padding: theme.spacing.xl,
+          borderRadius: theme.radius.md,
+          cursor: 'pointer',
+          marginBottom: '20%',
+        }}
+        mx="auto"
+      >
         <form onSubmit={form.onSubmit((values) => createAsset(values))}>
-          <TextInput required label="Name" {...form.getInputProps('name')} />
           <TextInput
+            className={'mb-5'}
             required
-            label="Description"
+            label={<b>Name</b>}
+            {...form.getInputProps('name')}
+          />
+          <TextInput
+            className={'mb-5'}
+            required
+            label={<b>Description</b>}
             {...form.getInputProps('description')}
           />
-          <TextInput
-            required
-            label={`Asking Price (${CURRENCY_NAME})`}
-            type={'number'}
-            {...form.getInputProps('price')}
-          />
-          <Checkbox
-            mt="md"
-            label="List for sale"
-            {...form.getInputProps('listForSale', { type: 'checkbox' })}
-          />
-          <Text>
-            Image <span className={'text-red-400'}>*</span>
+          <Group className={'pb-5'}>
+            <Alert
+              icon={<AlertCircle size={16} />}
+              title="List for sale"
+              color="green"
+            >
+              <Checkbox
+                mt="md"
+                label=" Once listed, this item will show up for sale. It is possible to
+            cancel the item listing, but any copies already sold will still
+            exist in the respective addresses."
+                color="green"
+                // @ts-ignore
+                ref={listItemCheckboxRef}
+                {...form.getInputProps('listForSale', { type: 'checkbox' })}
+              />
+            </Alert>
+          </Group>
+          {listItemCheckboxRef.current?.checked ? (
+            <>
+              <TextInput
+                required
+                label={<b>{`Asking Price (${CURRENCY_NAME})`}</b>}
+                type={'number'}
+                {...form.getInputProps('price')}
+              />
+            </>
+          ) : null}
+          <Text className={'mt-5'}>
+            <b>Image</b>
           </Text>
           {imagePreview ? (
             <Group>
@@ -338,7 +380,7 @@ const CreateItem: (props: { baseApiUrl: string }) => JSX.Element = (props: {
           )}
 
           <Text>
-            Files <span className={'text-red-400'}>*</span>
+            <b>Files</b>
           </Text>
           {files.map((file, index) => {
             return (
@@ -378,8 +420,36 @@ const CreateItem: (props: { baseApiUrl: string }) => JSX.Element = (props: {
               />
             ) : null}
           </Group>
+          <Group>
+            <Alert
+              icon={<AlertCircle size={16} />}
+              title="Upload to IPFS"
+              color="yellow"
+            >
+              <Checkbox
+                label={
+                  'I understand the selected picture, and files will be stored in IPFS and a link will be stored on the blockchain. ' +
+                  'IPFS is a distributed system for storing and accessing files, websites, applications, and data.'
+                }
+                mt="md"
+                color="yellow"
+                // @ts-ignore
+                ref={ipfsAwareCheckboxRef}
+                {...form.getInputProps('ipfsAware', { type: 'checkbox' })}
+              />
+              &nbsp;{' '}
+              <Anchor href={'https://docs.ipfs.io/concepts/what-is-ipfs/'}>
+                Learn More
+              </Anchor>
+            </Alert>
+          </Group>
           <Group position="right" mt="md">
-            <Button type="submit">Submit</Button>
+            <Button
+              type="submit"
+              disabled={!ipfsAwareCheckboxRef.current?.checked}
+            >
+              Create
+            </Button>
           </Group>
         </form>
         <Space />
