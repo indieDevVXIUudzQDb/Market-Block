@@ -14,6 +14,7 @@ contract NFT is IERC1155, ERC1155URIStorage {
 
     // Mapping from token ID to approved address amount
     mapping(uint256 => mapping(address => uint256)) private _approvedBalances;
+    mapping(uint256 => mapping(address =>  mapping(address => uint256))) private _approvedSellerBalances;
 
     event Approval(address indexed approved, uint256 indexed tokenId, uint256 indexed amount);
 
@@ -34,20 +35,22 @@ contract NFT is IERC1155, ERC1155URIStorage {
     }
 
     function safeTransferFrom(
+        address seller,
         address from,
         address to,
         uint256 id,
         uint256 amount,
         bytes memory data
-    ) public override(ERC1155, IERC1155){
-        uint256 approvedBalance = getApproved(_msgSender(), id);
+    ) public {
+        uint256 approvedBalance = _getApproved(_msgSender(), id);
         require(
             from == _msgSender() || approvedBalance >= amount || isApprovedForAll(from, _msgSender()),
             "ERC1155: caller is not owner nor approved"
         );
         _safeTransferFrom(from, to, id, amount, data);
-        if(from != _msgSender()){
+        if (from != _msgSender()) {
             _approvedBalances[id][_msgSender()] -= amount;
+            _approvedSellerBalances[id][_msgSender()][seller] -= amount;
 
         }
     }
@@ -55,19 +58,25 @@ contract NFT is IERC1155, ERC1155URIStorage {
     function approve(address operator, uint256 tokenId, uint256 amount) public {
         require(amount > 0, "ERC1155: Amount must be greater than 0");
         uint256 senderBalance = balanceOf(msg.sender, tokenId);
-        uint256 approvedBalance = getApproved(operator, tokenId);
+        uint256 approvedBalance = getApprovedForSeller(msg.sender, operator, tokenId);
+        require(approvedBalance <= senderBalance, "ERC1155: insufficient balance");
         uint256 remainingBalance = senderBalance - approvedBalance;
         require(amount <= remainingBalance, "ERC1155: insufficient balance");
-        _approve(operator, tokenId, amount);
+        _approve(msg.sender, operator, tokenId, amount);
     }
 
-    function getApproved(address operator,uint256 tokenId) public view returns (uint256) {
+    function _getApproved(address operator, uint256 tokenId) internal view returns (uint256) {
         return _approvedBalances[tokenId][operator];
     }
 
-    function _approve(address operator, uint256 tokenId, uint256 amount) internal {
+    function getApprovedForSeller(address seller, address operator, uint256 tokenId) public view returns (uint256) {
+        return _approvedSellerBalances[tokenId][operator][seller];
+    }
+
+    function _approve(address seller, address operator, uint256 tokenId, uint256 amount) internal {
         _approvedBalances[tokenId][operator] += amount;
-         emit Approval(operator, tokenId, amount);
+        _approvedSellerBalances[tokenId][operator][seller] += amount;
+        emit Approval(operator, tokenId, amount);
     }
 
     function _exists(address from, uint256 tokenId) internal view returns (bool) {

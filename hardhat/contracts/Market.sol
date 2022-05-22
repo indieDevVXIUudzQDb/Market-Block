@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "./NFT.sol";
 
 import "hardhat/console.sol";
 
@@ -110,7 +111,7 @@ contract Market is IERC1155Receiver, ReentrancyGuard {
             price,
             amount
         );
-        IERC1155(nftContract).safeTransferFrom(msg.sender, address(this), tokenId, amount, data);
+        NFT(nftContract).safeTransferFrom(msg.sender, msg.sender, address(this), tokenId, amount, data);
 
         emit MarketItemCreated(itemId, nftContract, tokenId, msg.sender, address(0), price, amount);
     }
@@ -124,10 +125,9 @@ contract Market is IERC1155Receiver, ReentrancyGuard {
         uint tokenId = idToMarketItem[itemId].tokenId;
         require(idToMarketItem[itemId].remainingAmount >= amount, "This item is not available");
         require(msg.value == price, "Please submit the asking price in order to complete the purchase");
-
         idToMarketItem[itemId].seller.transfer(msg.value);
         address nftContract = idToMarketItem[itemId].nftContract;
-        IERC1155(nftContract).safeTransferFrom(address(this), msg.sender, tokenId, amount, data);
+        NFT(nftContract).safeTransferFrom(idToMarketItem[itemId].seller,address(this), msg.sender, tokenId, amount, data);
         idToMarketItem[itemId].owner = payable(msg.sender);
         idToMarketItem[itemId].remainingAmount -= amount;
         _itemsSold.increment();
@@ -142,7 +142,7 @@ contract Market is IERC1155Receiver, ReentrancyGuard {
         require(idToMarketItem[itemId].remainingAmount >= amount, "This item is not available");
         uint256 tokenId = idToMarketItem[itemId].tokenId;
         address nftContract = idToMarketItem[itemId].nftContract;
-        IERC1155(nftContract).safeTransferFrom(address(this), idToMarketItem[itemId].seller, tokenId, amount, data);
+        NFT(nftContract).safeTransferFrom(idToMarketItem[itemId].seller, address(this), idToMarketItem[itemId].seller, tokenId, amount, data);
         idToMarketItem[itemId].remainingAmount -= amount;
 
         emit MarketItemStatusChange(itemId, idToMarketItem[itemId].remainingAmount);

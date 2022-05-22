@@ -32,9 +32,10 @@ export interface NFTInterface extends utils.Interface {
     "balanceOf(address,uint256)": FunctionFragment;
     "balanceOfBatch(address[],uint256[])": FunctionFragment;
     "createToken(string,uint256,bytes)": FunctionFragment;
-    "getApproved(address,uint256)": FunctionFragment;
+    "getApprovedForSeller(address,address,uint256)": FunctionFragment;
     "isApprovedForAll(address,address)": FunctionFragment;
     "safeBatchTransferFrom(address,address,uint256[],uint256[],bytes)": FunctionFragment;
+    "safeTransferFrom(address,address,address,uint256,uint256,bytes)": FunctionFragment;
     "safeTransferFrom(address,address,uint256,uint256,bytes)": FunctionFragment;
     "setApprovalForAll(address,bool)": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
@@ -47,10 +48,11 @@ export interface NFTInterface extends utils.Interface {
       | "balanceOf"
       | "balanceOfBatch"
       | "createToken"
-      | "getApproved"
+      | "getApprovedForSeller"
       | "isApprovedForAll"
       | "safeBatchTransferFrom"
-      | "safeTransferFrom"
+      | "safeTransferFrom(address,address,address,uint256,uint256,bytes)"
+      | "safeTransferFrom(address,address,uint256,uint256,bytes)"
       | "setApprovalForAll"
       | "supportsInterface"
       | "uri"
@@ -73,8 +75,8 @@ export interface NFTInterface extends utils.Interface {
     values: [string, BigNumberish, BytesLike]
   ): string;
   encodeFunctionData(
-    functionFragment: "getApproved",
-    values: [string, BigNumberish]
+    functionFragment: "getApprovedForSeller",
+    values: [string, string, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "isApprovedForAll",
@@ -85,7 +87,11 @@ export interface NFTInterface extends utils.Interface {
     values: [string, string, BigNumberish[], BigNumberish[], BytesLike]
   ): string;
   encodeFunctionData(
-    functionFragment: "safeTransferFrom",
+    functionFragment: "safeTransferFrom(address,address,address,uint256,uint256,bytes)",
+    values: [string, string, string, BigNumberish, BigNumberish, BytesLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "safeTransferFrom(address,address,uint256,uint256,bytes)",
     values: [string, string, BigNumberish, BigNumberish, BytesLike]
   ): string;
   encodeFunctionData(
@@ -109,7 +115,7 @@ export interface NFTInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "getApproved",
+    functionFragment: "getApprovedForSeller",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -121,7 +127,11 @@ export interface NFTInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "safeTransferFrom",
+    functionFragment: "safeTransferFrom(address,address,address,uint256,uint256,bytes)",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "safeTransferFrom(address,address,uint256,uint256,bytes)",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -262,7 +272,8 @@ export interface NFT extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    getApproved(
+    getApprovedForSeller(
+      seller: string,
       operator: string,
       tokenId: BigNumberish,
       overrides?: CallOverrides
@@ -283,7 +294,17 @@ export interface NFT extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    safeTransferFrom(
+    "safeTransferFrom(address,address,address,uint256,uint256,bytes)"(
+      seller: string,
+      from: string,
+      to: string,
+      id: BigNumberish,
+      amount: BigNumberish,
+      data: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    "safeTransferFrom(address,address,uint256,uint256,bytes)"(
       from: string,
       to: string,
       id: BigNumberish,
@@ -332,7 +353,8 @@ export interface NFT extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  getApproved(
+  getApprovedForSeller(
+    seller: string,
     operator: string,
     tokenId: BigNumberish,
     overrides?: CallOverrides
@@ -353,7 +375,17 @@ export interface NFT extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  safeTransferFrom(
+  "safeTransferFrom(address,address,address,uint256,uint256,bytes)"(
+    seller: string,
+    from: string,
+    to: string,
+    id: BigNumberish,
+    amount: BigNumberish,
+    data: BytesLike,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  "safeTransferFrom(address,address,uint256,uint256,bytes)"(
     from: string,
     to: string,
     id: BigNumberish,
@@ -402,7 +434,8 @@ export interface NFT extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    getApproved(
+    getApprovedForSeller(
+      seller: string,
       operator: string,
       tokenId: BigNumberish,
       overrides?: CallOverrides
@@ -423,7 +456,17 @@ export interface NFT extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    safeTransferFrom(
+    "safeTransferFrom(address,address,address,uint256,uint256,bytes)"(
+      seller: string,
+      from: string,
+      to: string,
+      id: BigNumberish,
+      amount: BigNumberish,
+      data: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    "safeTransferFrom(address,address,uint256,uint256,bytes)"(
       from: string,
       to: string,
       id: BigNumberish,
@@ -533,7 +576,8 @@ export interface NFT extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    getApproved(
+    getApprovedForSeller(
+      seller: string,
       operator: string,
       tokenId: BigNumberish,
       overrides?: CallOverrides
@@ -554,7 +598,17 @@ export interface NFT extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    safeTransferFrom(
+    "safeTransferFrom(address,address,address,uint256,uint256,bytes)"(
+      seller: string,
+      from: string,
+      to: string,
+      id: BigNumberish,
+      amount: BigNumberish,
+      data: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    "safeTransferFrom(address,address,uint256,uint256,bytes)"(
       from: string,
       to: string,
       id: BigNumberish,
@@ -604,7 +658,8 @@ export interface NFT extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    getApproved(
+    getApprovedForSeller(
+      seller: string,
       operator: string,
       tokenId: BigNumberish,
       overrides?: CallOverrides
@@ -625,7 +680,17 @@ export interface NFT extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    safeTransferFrom(
+    "safeTransferFrom(address,address,address,uint256,uint256,bytes)"(
+      seller: string,
+      from: string,
+      to: string,
+      id: BigNumberish,
+      amount: BigNumberish,
+      data: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    "safeTransferFrom(address,address,uint256,uint256,bytes)"(
       from: string,
       to: string,
       id: BigNumberish,
