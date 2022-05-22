@@ -178,7 +178,9 @@ describe("Market", function () {
     expect(await nft.balanceOf(seller.address, 1)).to.equal(0);
     expect(await nft.balanceOf(buyer1.address, 1)).to.equal(1);
 
+    expect(await nft.getApproved(marketAddress, 1)).to.equal(0);
     await nft.connect(buyer1).approve(marketAddress, 1, 1);
+    expect(await nft.getApproved(marketAddress, 1)).to.equal(1);
 
     // Relist item for sale
     await market

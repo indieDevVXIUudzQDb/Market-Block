@@ -5,19 +5,14 @@ import { DigitalItem, MarketItem } from '../pages/item/[...slug]'
 interface Props {
   opened: boolean
   setOpened: (o: boolean) => void
-  item: DigitalItem | MarketItem
-  onConfirmClick: (
-    item: DigitalItem | MarketItem,
-    price: string,
-    amount: string
-  ) => void
+  item: MarketItem
+  onConfirmClick: (item: MarketItem, amount: string) => void
 }
-export function SellModal(props: Props) {
+export function BuyModal(props: Props) {
   const { item, opened, setOpened, onConfirmClick } = props
   const form = useForm({
     initialValues: {
       amount: 1,
-      price: 0,
     },
   })
   return (
@@ -25,29 +20,16 @@ export function SellModal(props: Props) {
       opened={opened}
       centered={true}
       onClose={() => setOpened(false)}
-      title="Sell Item"
+      title="Buy Item"
     >
       <form
         onSubmit={form.onSubmit((values) => {
-          if (values.price) {
-            onConfirmClick(
-              item,
-              values.price.toString(),
-              values.amount.toString()
-            )
+          if (values.amount) {
+            onConfirmClick(item, values.amount.toString())
             setOpened(false)
           }
         })}
       >
-        <Group grow={true} className={'p-2'}>
-          <TextInput
-            required={true}
-            label="Price"
-            type={'number'}
-            placeholder={'100'}
-            {...form.getInputProps('price')}
-          />
-        </Group>
         <Group grow={true} className={'p-2'}>
           <TextInput
             required={true}
@@ -60,7 +42,7 @@ export function SellModal(props: Props) {
         </Group>
         <Group position="center" className={'pt-2'}>
           <Group position="right" mt="md">
-            <Button type="submit">Sell</Button>
+            <Button type="submit">Buy</Button>
           </Group>
         </Group>
       </form>

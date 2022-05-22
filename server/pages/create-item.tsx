@@ -66,9 +66,10 @@ const CreateItem: (props: { baseApiUrl: string }) => JSX.Element = (props: {
     initialValues: {
       name: 'Test',
       description: 'test description',
-      price: '100',
+      price: 100,
       listForSale: true,
       ipfsAware: false,
+      amount: 1,
     },
   })
   const getIconColor = (status: DropzoneStatus, theme: MantineTheme) => {
@@ -164,12 +165,13 @@ const CreateItem: (props: { baseApiUrl: string }) => JSX.Element = (props: {
     name?: string
     description?: string
     listForSale?: boolean
-    price?: string
+    price?: number
     ipfsAware: boolean
+    amount: number
   }) => {
     if (!formValues.ipfsAware) return
     try {
-      const { name, description, price, listForSale } = formValues
+      const { name, description, price, listForSale, amount } = formValues
       const signer = await activeSigner(web3State)
       let imageURL
       if (imageArrayBuffer) {
@@ -243,7 +245,7 @@ const CreateItem: (props: { baseApiUrl: string }) => JSX.Element = (props: {
       const ipfsURL = `${ipfsFileURL}${dataAdded.path}`
       console.log({ ipfsURL })
 
-      const tokenId = await createAssetUtil(ipfsURL, signer, baseApiUrl)
+      const tokenId = await createAssetUtil(ipfsURL, signer, baseApiUrl, amount)
       if (tokenId) {
         toast.success('Item Created Successfully', toastConfig)
       } else {
@@ -251,7 +253,7 @@ const CreateItem: (props: { baseApiUrl: string }) => JSX.Element = (props: {
       }
 
       if (listForSale) {
-        await createMarketListing(tokenId, price || '0')
+        await createMarketListing(tokenId, (price || '0').toString(), amount)
       }
     } catch (e) {
       // @ts-ignore
@@ -263,12 +265,21 @@ const CreateItem: (props: { baseApiUrl: string }) => JSX.Element = (props: {
     }
   }
 
-  const createMarketListing = async (tokenId: string, salePrice: string) => {
+  const createMarketListing = async (
+    tokenId: string,
+    salePrice: string,
+    amount: number
+  ) => {
     try {
       console.log('createMarketItem called', tokenId)
       const signer = await activeSigner(web3State)
       //Create Market Item
-      const created = await createMarketListingUtil(tokenId, salePrice, signer)
+      const created = await createMarketListingUtil(
+        tokenId,
+        salePrice,
+        signer,
+        amount
+      )
       if (created) {
         toast.success('Market Item Listed Successfully', toastConfig)
       } else {
@@ -297,7 +308,6 @@ const CreateItem: (props: { baseApiUrl: string }) => JSX.Element = (props: {
             theme.colorScheme === 'dark'
               ? theme.colors.dark[6]
               : theme.colors.gray[0],
-          // textAlign: 'center',
           padding: theme.spacing.xl,
           borderRadius: theme.radius.md,
           cursor: 'pointer',
@@ -317,6 +327,14 @@ const CreateItem: (props: { baseApiUrl: string }) => JSX.Element = (props: {
             required
             label={<b>Description</b>}
             {...form.getInputProps('description')}
+          />
+          <TextInput
+            className={'mb-5'}
+            required
+            label={<b>Quantity</b>}
+            type={'number'}
+            min={1}
+            {...form.getInputProps('amount')}
           />
           <Group className={'pb-5'}>
             <Alert
@@ -342,6 +360,7 @@ const CreateItem: (props: { baseApiUrl: string }) => JSX.Element = (props: {
                 required
                 label={<b>{`Asking Price (${CURRENCY_NAME})`}</b>}
                 type={'number'}
+                min={0}
                 {...form.getInputProps('price')}
               />
             </>

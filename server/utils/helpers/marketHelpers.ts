@@ -46,23 +46,27 @@ export const loadMarketItemUtil = async (
     meta = await axios.get(tokenUri)
     // This a new item with no market history
     marketData = await marketContract.fetchMarketItemByTokenId(tokenId)
+    const marketDataTokenId = marketData.tokenId.toNumber()
+    if (marketDataTokenId === 0) {
+      marketData = null
+    }
+    console.log({ marketData })
   } catch (e) {
     meta = {
       data: { image: null, name: null, description: null },
     }
   }
 
-  let approvedCount = 0,
-    balance,
-    isOwner = false
+  let amountApproved = 0,
+    amountOwned = 0
   try {
     let balanceResult
     if (web3State.address) {
+      console.log('hello')
       balanceResult = await tokenContract.balanceOf(web3State.address, tokenId)
-    }
-    if (balanceResult) {
-      balance = balanceResult.toNumber()
-      isOwner = balance > 0
+      console.log({ balanceResult })
+      amountOwned = balanceResult.toNumber()
+      console.log({ amountOwned })
     }
   } catch (e) {
     console.error(e)
@@ -70,18 +74,6 @@ export const loadMarketItemUtil = async (
 
   if (marketData && marketData.status === 0) {
     let price = ethers.utils.formatUnits(marketData.price.toString(), 'ether')
-    try {
-      if (
-        marketData.owner === '0x0000000000000000000000000000000000000000' &&
-        web3State.address
-      ) {
-        isOwner = marketData.seller.toLowerCase() === web3State.address
-      }
-      if (isOwner) {
-      }
-    } catch (e) {
-      console.error(e)
-    }
 
     const marketItem: MarketItem = {
       tokenId,
@@ -95,20 +87,18 @@ export const loadMarketItemUtil = async (
       description: meta.data.description as string,
       // @ts-ignore
       tokenUri,
-      isOwner,
-      approvedCount,
+      amountOwned,
+      amountApproved,
       meta,
       available: marketData.status === 0,
     }
     console.log({ marketItem })
     return marketItem
   } else {
-    if (isOwner && web3State.address) {
-      const result = await tokenContract.getApproved(
-        web3State.address,
-        marketAddress
-      )
-      approvedCount = result.toNumber()
+    if (web3State.address) {
+      const result = await tokenContract.getApproved(marketAddress, tokenId)
+      amountApproved = result.toNumber()
+      console.log({ amountApproved })
     }
     let digitalItem: DigitalItem = {
       tokenId,
@@ -118,9 +108,9 @@ export const loadMarketItemUtil = async (
       description: meta.data.description as string,
       // @ts-ignore
       tokenUri,
-      approvedCount,
+      amountApproved,
       meta,
-      isOwner,
+      amountOwned,
     }
     console.log({ digitalItem })
     return digitalItem
@@ -142,7 +132,8 @@ export const loadMarketItemsUtil = async (
 
 export const buyMarketItemUtil = async (
   marketItem: MarketItem,
-  web3State: Web3State
+  web3State: Web3State,
+  amount: string
 ) => {
   const web3Modal = new Web3Modal()
   const connection = await web3Modal.connect()
@@ -157,8 +148,7 @@ export const buyMarketItemUtil = async (
   const price = ethers.utils.parseUnits(marketItem.price.toString(), 'ether')
   const transaction = await contract.createMarketSale(
     marketItem.itemId,
-    //TODO amount
-    1,
+    amount,
     ethers.utils.toUtf8Bytes(''),
     {
       value: price,
@@ -171,7 +161,8 @@ export const buyMarketItemUtil = async (
 export const sellItemUtil = async (
   digitalItem: DigitalItem,
   salePrice: string,
-  web3State: Web3State
+  web3State: Web3State,
+  amount: string
 ) => {
   const signer = await activeSigner(web3State)
   //Create Market Item
@@ -187,8 +178,7 @@ export const sellItemUtil = async (
     nftAddress,
     digitalItem.tokenId,
     price,
-    //TODO amount
-    1,
+    amount,
     ethers.utils.toUtf8Bytes(''),
     { value: listingPrice }
   )
@@ -198,7 +188,8 @@ export const sellItemUtil = async (
 
 export const cancelMarketSaleUtil = async (
   marketItem: MarketItem,
-  web3State: Web3State
+  web3State: Web3State,
+  amount: string
 ) => {
   let signer: JsonRpcSigner
   // @ts-ignore
@@ -219,7 +210,7 @@ export const cancelMarketSaleUtil = async (
   ) as IMarket
   const marketTransaction = await marketContract.cancelMarketItem(
     marketItem.itemId,
-    1,
+    amount,
     ethers.utils.toUtf8Bytes('')
   )
   await marketTransaction.wait()
@@ -229,7 +220,8 @@ export const cancelMarketSaleUtil = async (
 
 export const approveMarketSaleUtil = async (
   digitalItem: DigitalItem,
-  web3State: Web3State
+  web3State: Web3State,
+  amount: string
 ) => {
   let signer: JsonRpcSigner
   // @ts-ignore
@@ -251,8 +243,7 @@ export const approveMarketSaleUtil = async (
   const approveTransaction = await tokenContract.approve(
     marketAddress,
     digitalItem.tokenId,
-    //TODO amount
-    1
+    amount
   )
 
   await approveTransaction.wait()
@@ -262,7 +253,8 @@ export const approveMarketSaleUtil = async (
 export const createAssetUtil = async (
   ipfsURL: string,
   signer: JsonRpcSigner,
-  baseApiUrl: string
+  baseApiUrl: string,
+  amount: number
 ) => {
   // Create NFT
   const contract: INFT = new ethers.Contract(
@@ -272,7 +264,7 @@ export const createAssetUtil = async (
   ) as INFT
   const nftTransaction = await contract.createToken(
     ipfsURL,
-    1,
+    amount,
     ethers.utils.toUtf8Bytes('')
   )
   const nftTx = await nftTransaction.wait()
@@ -312,7 +304,8 @@ export const createAssetUtil = async (
 export const createMarketListingUtil = async (
   tokenId: string,
   salePrice: string,
-  signer: JsonRpcSigner
+  signer: JsonRpcSigner,
+  amount: number
 ) => {
   console.log('createMarketItem called', tokenId)
   // @ts-ignore
@@ -330,8 +323,7 @@ export const createMarketListingUtil = async (
     nftAddress,
     tokenId,
     price,
-    //TODO
-    1,
+    amount,
     ethers.utils.toUtf8Bytes(''),
     { value: listingPrice }
   )

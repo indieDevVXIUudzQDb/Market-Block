@@ -24,6 +24,9 @@ import {
   loadMarketItemUtil,
   sellItemUtil,
 } from '../../utils/helpers/marketHelpers'
+import { ApproveModal } from '../../components/ApproveModal'
+import { BuyModal } from '../../components/BuyModal'
+import { CancelListingModal } from '../../components/CancelListingModal'
 
 export interface DigitalItem {
   tokenId: number
@@ -33,8 +36,9 @@ export interface DigitalItem {
   description: string
   tokenUri: string
   meta: any
-  approvedCount: number
-  isOwner: boolean
+  amountApproved: number
+  amountOwned: number
+  amountListed: number
 }
 
 export interface MarketItem extends DigitalItem {
@@ -50,6 +54,11 @@ export const isMarketItem = (object: any): object is MarketItem => {
   return 'price' in object
 }
 
+export const isDigitalItem = (object: any): object is MarketItem => {
+  const result = 'price' in object
+  return !result
+}
+
 const ItemDetail: NextPage = () => {
   const router = useRouter()
   const { slug } = router.query
@@ -59,6 +68,9 @@ const ItemDetail: NextPage = () => {
   const [item, setItem] = useState<DigitalItem | MarketItem | null>()
   const [loading, setLoading] = useState<boolean>(false)
   const [sellOpened, setSellOpened] = useState(false)
+  const [approveOpened, setApproveOpened] = useState(false)
+  const [buyOpened, setBuyOpened] = useState(false)
+  const [cancelListingOpened, setCancelListingOpened] = useState(false)
 
   const loadMarketItem = async () => {
     let tokenId
@@ -91,9 +103,9 @@ const ItemDetail: NextPage = () => {
     }
   }
 
-  const buyMarketItem = async (marketItem: MarketItem) => {
+  const buyMarketItem = async (marketItem: MarketItem, amount: string) => {
     try {
-      await buyMarketItemUtil(marketItem, web3State)
+      await buyMarketItemUtil(marketItem, web3State, amount)
       toast.success('Market Item Created', toastConfig)
     } catch (e) {
       console.error(e)
@@ -102,9 +114,13 @@ const ItemDetail: NextPage = () => {
     loadMarketItem()
   }
 
-  const sellItem = async (digitalItem: DigitalItem, salePrice: string) => {
+  const sellItem = async (
+    digitalItem: DigitalItem,
+    salePrice: string,
+    amount: string
+  ) => {
     try {
-      await sellItemUtil(digitalItem, salePrice, web3State)
+      await sellItemUtil(digitalItem, salePrice, web3State, amount)
       toast.success('Market Item Created', toastConfig)
     } catch (e) {
       console.error(e)
@@ -113,9 +129,9 @@ const ItemDetail: NextPage = () => {
     loadMarketItem()
   }
 
-  const cancelMarketSale = async (marketItem: MarketItem) => {
+  const cancelMarketSale = async (marketItem: MarketItem, amount: string) => {
     try {
-      await cancelMarketSaleUtil(marketItem, web3State)
+      await cancelMarketSaleUtil(marketItem, web3State, amount)
       toast.success('Market Item Created', toastConfig)
     } catch (e) {
       console.error(e)
@@ -124,9 +140,12 @@ const ItemDetail: NextPage = () => {
     loadMarketItem()
   }
 
-  const approveMarketSale = async (digitalItem: DigitalItem) => {
+  const approveMarketSale = async (
+    digitalItem: DigitalItem,
+    amount: string
+  ) => {
     try {
-      await approveMarketSaleUtil(digitalItem, web3State)
+      await approveMarketSaleUtil(digitalItem, web3State, amount)
       toast.success('Market listing approved', toastConfig)
     } catch (e) {
       console.error(e)
@@ -146,12 +165,37 @@ const ItemDetail: NextPage = () => {
       ) : !loading && item ? (
         <>
           {item ? (
-            <SellModal
-              opened={sellOpened}
-              setOpened={setSellOpened}
-              onSellClick={sellItem}
-              item={item}
-            />
+            <>
+              <SellModal
+                opened={sellOpened}
+                setOpened={setSellOpened}
+                onConfirmClick={sellItem}
+                item={item}
+              />
+              <ApproveModal
+                opened={approveOpened}
+                setOpened={setApproveOpened}
+                onConfirmClick={approveMarketSale}
+                item={item}
+              />
+              {isMarketItem(item) ? (
+                <CancelListingModal
+                  opened={cancelListingOpened}
+                  setOpened={setCancelListingOpened}
+                  onConfirmClick={cancelMarketSale}
+                  item={item}
+                />
+              ) : null}
+
+              {isDigitalItem(item) ? (
+                <BuyModal
+                  opened={buyOpened}
+                  setOpened={setBuyOpened}
+                  onConfirmClick={buyMarketItem}
+                  item={item}
+                />
+              ) : null}
+            </>
           ) : null}
           <Card
             shadow="sm"
@@ -176,7 +220,7 @@ const ItemDetail: NextPage = () => {
                     withPlaceholder
                     placeholder={
                       <Image
-                        src={LOGO_URL}
+                        src={`${LOGO_URL}`}
                         height={160}
                         alt={'logo'}
                         fit="contain"
@@ -209,27 +253,44 @@ const ItemDetail: NextPage = () => {
                   {JSON.stringify(item.meta.data)}
                 </Prism>
               </Group>
+              <Group position={'left'}>
+                <p>
+                  <b>Quantiy Owned: </b>
+                  <br />
+                  {item.amountOwned}
+                </p>
+              </Group>
+              <Group position={'left'}>
+                <p>
+                  <b>Quantiy Listed for Sale: </b>
+                  <br />
+                  {item.amountListed}
+                </p>
+              </Group>
               {!web3State.connected ? (
                 <Group position={'left'} grow>
                   <Button color={'gray'}>Wallet not connected</Button>
                   <div />
                 </Group>
-              ) : item &&
-                isMarketItem(item) &&
-                item.isOwner &&
-                item.available ? (
+              ) : null}
+
+              {item &&
+              isMarketItem(item) &&
+              item.amountOwned &&
+              item.available ? (
                 <Group position={'left'} grow>
                   <Button
                     color={'yellow'}
                     onClick={() => {
-                      cancelMarketSale(item)
+                      setCancelListingOpened(true)
                     }}
                   >
                     Cancel Sale
                   </Button>
                   <div />
                 </Group>
-              ) : item && item.isOwner && item.approvedCount > 0 ? (
+              ) : null}
+              {item && item.amountOwned && item.amountApproved > 0 ? (
                 <Group position={'left'} grow>
                   <Button
                     onClick={() => {
@@ -240,19 +301,21 @@ const ItemDetail: NextPage = () => {
                   </Button>
                   <div />
                 </Group>
-              ) : item && item.isOwner ? (
+              ) : null}
+              {item && item.amountOwned ? (
                 <Group position={'left'} grow>
                   <Button
                     color={'green'}
                     onClick={() => {
-                      approveMarketSale(item)
+                      setApproveOpened(true)
                     }}
                   >
                     Approve for Sale
                   </Button>
                   <div />
                 </Group>
-              ) : item && isMarketItem(item) && !item.isOwner ? (
+              ) : null}
+              {item && isMarketItem(item) && !item.amountOwned ? (
                 <>
                   <Group position={'left'}>
                     <p>
@@ -267,7 +330,7 @@ const ItemDetail: NextPage = () => {
                       color={'green'}
                       disabled={!item.available}
                       onClick={() => {
-                        buyMarketItem(item)
+                        setBuyOpened(true)
                       }}
                     >
                       Buy Now

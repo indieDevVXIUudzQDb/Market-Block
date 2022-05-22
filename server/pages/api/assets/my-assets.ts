@@ -42,10 +42,10 @@ const handler = nextConnect()
           asset.tokenId
         )
         let owner,
-          isOwner = false
+          amountOwned = false
         if (marketItem && marketItem.status === 0) {
           owner = marketItem.seller
-          isOwner = owner.toLowerCase() === queryAddress.toLowerCase()
+          amountOwned = owner.toLowerCase() === queryAddress.toLowerCase()
         } else {
           let balanceResult
           if (queryAddress) {
@@ -56,11 +56,11 @@ const handler = nextConnect()
           }
           if (balanceResult) {
             let balance = balanceResult.toNumber()
-            isOwner = balance > 0
+            amountOwned = balance > 0
           }
         }
         // console.log('owner', owner, 'address', queryAddress)
-        return isOwner
+        return amountOwned
       }
     )
 
