@@ -291,7 +291,7 @@ describe("Market", function () {
     expect(recentMarketItem.remainingAmount).to.equal(0);
   });
 
-  it("Should handle amount per token", async function () {
+  it("Should amounts per token id", async function () {
     const listingPriceResult = await market.getListingPrice();
     const listingPrice = listingPriceResult.toString();
     const auctionPrice1 = ethers.utils.parseUnits("100", "ether");
@@ -338,18 +338,29 @@ describe("Market", function () {
 
     // Relist item for sale
     await market
-      .connect(buyer1)
-      .createMarketItem(nftContractAddress, 1, auctionPrice2, 1, emptyData, {
+      .connect(seller)
+      .createMarketItem(nftContractAddress, 1, auctionPrice2, 2, emptyData, {
         value: listingPrice,
       });
 
-    // Create 2nd sale
+    // Create 2nd sale with insufficient funds
+    const insufficientOffer = ethers.utils.parseUnits("200", "ether");
+
+    await expect(
+      market
+        .connect(buyer2)
+        .createMarketSale(2, 2, emptyData, { value: insufficientOffer })
+    ).to.be.revertedWith(
+      "Please submit the asking price in order to complete the purchase"
+    );
+    // Create 2nd sale with sufficient funds
+    const sufficientOffer = ethers.utils.parseUnits("400", "ether");
+
     await market
       .connect(buyer2)
-      .createMarketSale(2, 1, emptyData, { value: auctionPrice2 });
+      .createMarketSale(2, 2, emptyData, { value: sufficientOffer });
 
-    expect(await nft.balanceOf(buyer1.address, 1)).to.equal(0);
-    expect(await nft.balanceOf(buyer2.address, 1)).to.equal(1);
+    expect(await nft.balanceOf(buyer2.address, 1)).to.equal(2);
 
     // Check final details of tokens
     const item1 = await market.fetchMarketItem(1);
@@ -363,10 +374,9 @@ describe("Market", function () {
     const item2 = await market.fetchMarketItem(2);
     expect(item2.tokenId.toString()).to.equal("1");
     expect(item2.price.toString()).to.equal(auctionPrice2.toString());
-    expect(item2.seller).to.equal(buyer1.address);
+    expect(item2.seller).to.equal(seller.address);
     expect(item2.owner).to.equal(buyer2.address);
     expect(item2.remainingAmount).to.equal("0");
-    //  TODO price account for quantity
   });
 
   it("Should contain initial provided listing price, and should be updatable", async function () {

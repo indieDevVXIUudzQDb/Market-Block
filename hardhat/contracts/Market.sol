@@ -121,7 +121,7 @@ contract Market is IERC1155Receiver, ReentrancyGuard {
         uint256 amount,
         bytes memory data
     ) public payable nonReentrant {
-        uint price = idToMarketItem[itemId].price;
+        uint price = idToMarketItem[itemId].price * amount;
         uint tokenId = idToMarketItem[itemId].tokenId;
         require(idToMarketItem[itemId].remainingAmount >= amount, "This item is not available");
         require(msg.value == price, "Please submit the asking price in order to complete the purchase");
