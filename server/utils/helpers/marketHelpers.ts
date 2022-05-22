@@ -50,7 +50,6 @@ export const loadMarketItemUtil = async (
     if (marketDataTokenId === 0) {
       marketData = null
     }
-    console.log({ marketData })
   } catch (e) {
     meta = {
       data: { image: null, name: null, description: null },
@@ -62,11 +61,10 @@ export const loadMarketItemUtil = async (
   try {
     let balanceResult
     if (web3State.address) {
-      console.log('hello')
       balanceResult = await tokenContract.balanceOf(web3State.address, tokenId)
-      console.log({ balanceResult })
+      // console.log({ balanceResult })
       amountOwned = balanceResult.toNumber()
-      console.log({ amountOwned })
+      // console.log({ amountOwned })
     }
   } catch (e) {
     console.error(e)

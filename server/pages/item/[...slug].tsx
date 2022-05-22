@@ -6,6 +6,7 @@ import {
   Group,
   Image,
   SimpleGrid,
+  Table,
   Title,
 } from '@mantine/core'
 import { useEffect, useState } from 'react'
@@ -158,6 +159,54 @@ const ItemDetail: NextPage = () => {
     loadMarketItem()
   }, [slug, web3State.address])
 
+  const elements = [
+    {
+      tokenId: 1,
+      price: 12.011,
+      address: 'kdfsjh23k4jkhlk23432lk43kj42',
+      amount: 1,
+    },
+    {
+      tokenId: 1,
+      price: 14.007,
+      address: 'kdfsjh23k4jkhlk23432lk43kj42',
+      amount: 2,
+    },
+    {
+      tokenId: 1,
+      price: 88.906,
+      address: 'kdfsjh23k4jkhlk23432lk43kj42',
+      amount: 1,
+    },
+    {
+      tokenId: 1,
+      price: 137.33,
+      address: 'kdfsjh23k4jkhlk23432lk43kj42',
+      amount: 3,
+    },
+    {
+      tokenId: 1,
+      price: 140.12,
+      address: 'kdfsjh23k4jkhlk23432lk43kj42',
+      amount: 1,
+    },
+  ]
+
+  const rows = elements.map((element, index) => (
+    <tr key={index}>
+      <td>{element.address}</td>
+      <td>{element.amount}</td>
+      <td>
+        {element.price} {CURRENCY_NAME}
+      </td>
+      <td>
+        <Button color={'green'} onClick={() => setBuyOpened(true)}>
+          Buy
+        </Button>
+      </td>
+    </tr>
+  ))
+
   return (
     <Layout web3State={web3State}>
       {!loading && !item ? (
@@ -297,20 +346,22 @@ const ItemDetail: NextPage = () => {
                       setSellOpened(true)
                     }}
                   >
-                    Sell
+                    Sell - {item.amountApproved}
+                    &nbsp; available
                   </Button>
                   <div />
                 </Group>
               ) : null}
-              {item && item.amountOwned ? (
+              {item && item.amountOwned - item.amountApproved > 0 ? (
                 <Group position={'left'} grow>
                   <Button
-                    color={'green'}
+                    color={'orange'}
                     onClick={() => {
                       setApproveOpened(true)
                     }}
                   >
-                    Approve for Sale
+                    Approve for Sale - {item.amountOwned - item.amountApproved}
+                    &nbsp; available
                   </Button>
                   <div />
                 </Group>
@@ -338,6 +389,17 @@ const ItemDetail: NextPage = () => {
                   </Group>
                 </>
               ) : null}
+
+              <Table>
+                <thead>
+                  <tr>
+                    <th>Address</th>
+                    <th>Quantity</th>
+                    <th>Price</th>
+                  </tr>
+                </thead>
+                <tbody>{rows}</tbody>
+              </Table>
             </SimpleGrid>
           </Card>
         </>
