@@ -39,7 +39,7 @@ export interface DigitalItem {
   meta: any
   amountApproved: number
   amountOwned: number
-  amountListed: number
+  amountOwnedListed: number
   marketItems: MarketItem[]
 }
 
@@ -261,19 +261,24 @@ const ItemDetail: NextPage = () => {
                 </Group>
               ) : null}
 
-              {item && item.amountOwned && item.amountApproved > 0 ? (
+              {item &&
+              item.amountOwned &&
+              item.amountApproved - item.amountOwnedListed > 0 ? (
                 <Group position={'left'} grow>
                   <Button
                     onClick={() => {
                       setSellOpened(true)
                     }}
                   >
-                    List for Sale
+                    List for Sale (x
+                    {item.amountApproved - item.amountOwnedListed})
                   </Button>
                   <div />
                 </Group>
               ) : null}
-              {item && item.amountOwned - item.amountApproved > 0 ? (
+              {item &&
+              item.amountOwned - item.amountOwnedListed - item.amountApproved >
+                0 ? (
                 <Group position={'left'} grow>
                   <Button
                     color={'orange'}
@@ -281,7 +286,11 @@ const ItemDetail: NextPage = () => {
                       setApproveOpened(true)
                     }}
                   >
-                    Approve for Sale
+                    Approve for Sale (x
+                    {item.amountOwned -
+                      item.amountOwnedListed -
+                      item.amountApproved}
+                    )
                   </Button>
                   <div />
                 </Group>

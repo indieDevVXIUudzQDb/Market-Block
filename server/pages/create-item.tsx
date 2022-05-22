@@ -66,6 +66,7 @@ const CreateItem: (props: { baseApiUrl: string }) => JSX.Element = (props: {
   const listItemCheckboxRef = useRef<HTMLInputElement>()
   const ipfsAwareCheckboxRef = useRef<HTMLInputElement>()
   const permissionAwareCheckboxRef = useRef<HTMLInputElement>()
+  const amountRef = useRef<HTMLInputElement>()
 
   const [uploadedLinks, setUploadedLinks] = useState<
     { name: string; link: string }[]
@@ -73,13 +74,14 @@ const CreateItem: (props: { baseApiUrl: string }) => JSX.Element = (props: {
 
   const form = useForm({
     initialValues: {
-      name: '',
-      description: '',
-      price: 100,
+      name: null,
+      description: null,
+      price: null,
       listForSale: true,
       ipfsAware: false,
       permissionAware: false,
-      amount: 1,
+      amount: null,
+      listAmount: null,
     },
   })
   const getIconColor = (status: DropzoneStatus, theme: MantineTheme) => {
@@ -178,10 +180,12 @@ const CreateItem: (props: { baseApiUrl: string }) => JSX.Element = (props: {
     price?: number
     ipfsAware: boolean
     amount: number
+    listAmount: number
   }) => {
     if (!formValues.ipfsAware) return
     try {
-      const { name, description, price, listForSale, amount } = formValues
+      const { name, description, price, listForSale, amount, listAmount } =
+        formValues
       const signer = await activeSigner(web3State)
       let imageURL
       if (imageArrayBuffer) {
@@ -263,7 +267,11 @@ const CreateItem: (props: { baseApiUrl: string }) => JSX.Element = (props: {
       }
 
       if (listForSale) {
-        await createMarketListing(tokenId, (price || '0').toString(), amount)
+        await createMarketListing(
+          tokenId,
+          (price || '0').toString(),
+          listAmount
+        )
       } else {
         resetPage()
       }
@@ -315,6 +323,7 @@ const CreateItem: (props: { baseApiUrl: string }) => JSX.Element = (props: {
     setImageFile(null)
   }
 
+  // @ts-ignore
   return (
     <Layout web3State={web3State}>
       <Box
@@ -331,7 +340,12 @@ const CreateItem: (props: { baseApiUrl: string }) => JSX.Element = (props: {
         }}
         mx="auto"
       >
-        <form onSubmit={form.onSubmit((values) => createAsset(values))}>
+        <form
+          onSubmit={form.onSubmit((values) => {
+            // @ts-ignore
+            createAsset(values)
+          })}
+        >
           <TextInput
             className={'mb-5'}
             required
@@ -350,6 +364,8 @@ const CreateItem: (props: { baseApiUrl: string }) => JSX.Element = (props: {
             label={<b>Quantity</b>}
             type={'number'}
             min={1}
+            //@ts-ignore
+            ref={amountRef}
             {...form.getInputProps('amount')}
           />
           <Group className={'pb-5'}>
@@ -378,6 +394,14 @@ const CreateItem: (props: { baseApiUrl: string }) => JSX.Element = (props: {
                 type={'number'}
                 min={0}
                 {...form.getInputProps('price')}
+              />
+              <TextInput
+                required
+                label={<b>{`Quantity to list for sale`}</b>}
+                type={'number'}
+                min={1}
+                max={amountRef.current?.value}
+                {...form.getInputProps('listAmount')}
               />
             </>
           ) : null}
@@ -439,7 +463,6 @@ const CreateItem: (props: { baseApiUrl: string }) => JSX.Element = (props: {
             onDrop={(files) => onDrop(files, false)}
             onReject={(files) => console.log('rejected files', files)}
             maxSize={3 * 1024 ** 2}
-            accept={IMAGE_MIME_TYPE}
             loading={uploadingFiles}
           >
             {(status) => dropzoneFileChildren(status, theme)}
@@ -509,16 +532,17 @@ const CreateItem: (props: { baseApiUrl: string }) => JSX.Element = (props: {
               Create
             </Button>
           </Group>
-          <Box>
-            <Text>
-              <b>Created Assets</b>
-            </Text>
-            {uploadedLinks.length > 0
-              ? uploadedLinks.map((link, index) => (
-                  <Anchor href={link.link}>{link.name}</Anchor>
-                ))
-              : null}
-          </Box>
+          {/*TODO*/}
+          {/*<Box>*/}
+          {/*  <Text>*/}
+          {/*    <b>Created Assets</b>*/}
+          {/*  </Text>*/}
+          {/*  {uploadedLinks.length > 0*/}
+          {/*    ? uploadedLinks.map((link, index) => (*/}
+          {/*        <Anchor href={link.link}>{link.name}</Anchor>*/}
+          {/*      ))*/}
+          {/*    : null}*/}
+          {/*</Box>*/}
         </form>
         <Space />
       </Box>

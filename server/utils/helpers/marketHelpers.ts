@@ -61,6 +61,7 @@ export const loadMarketItemUtil = async (
   }
 
   let amountApproved = 0,
+    amountOwnedListed = 0,
     amountOwned = 0
   try {
     let balanceResult
@@ -92,6 +93,7 @@ export const loadMarketItemUtil = async (
       marketItem.seller.toLowerCase() === web3State.address?.toLowerCase()
     if (marketItem && isCurrentOwner) {
       amountOwned += marketItem.amountAvailable
+      amountOwnedListed += marketItem.amountAvailable
     }
     console.log({ marketItem })
     marketItems.push(marketItem)
@@ -115,8 +117,9 @@ export const loadMarketItemUtil = async (
     tokenUri,
     amountApproved,
     meta,
-    amountOwned,
     marketItems,
+    amountOwned,
+    amountOwnedListed,
   }
   console.log({ digitalItem })
   return digitalItem
