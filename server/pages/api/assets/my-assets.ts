@@ -1,11 +1,7 @@
 import nextConnect from 'next-connect'
-import { ethers } from 'ethers'
-import { rpcURL } from '../../../utils/constants/config'
-import NFT from '../../../artifacts/contracts/NFT.sol/NFT.json'
-import Market from '../../../artifacts/contracts/MARKET.sol/Market.json'
-import { filter } from '../../../utils/helpers/common'
-import { marketAddress } from '../../../utils/constants/contracts'
-import { Market as IMarket, NFT as INFT } from '../../../types'
+import { DigitalItem } from '../../item/[...slug]'
+import { loadMarketItemsUtil } from '../../../utils/helpers/marketHelpers'
+import { Web3State } from '../../../hooks/useWeb3State'
 
 const models = require('../../../db/models/index')
 
@@ -16,62 +12,36 @@ const handler = nextConnect()
       // @ts-ignore
       query: { nextPage, queryAddress },
     } = req
-    const limit = 20
     const assets = await models.assets.findAndCountAll({
       attributes: {
         exclude: [],
       },
       order: [['id', 'DESC']],
     })
-
-    const ownedAssets = await filter(
+    const web3State: Web3State = {
+      address: queryAddress,
+      connected: true,
+      provider: undefined,
+      connectWallet: function (): Promise<void> {
+        throw new Error('Function not implemented.')
+      },
+      web3Modal: undefined,
+    }
+    const items: DigitalItem[] = await loadMarketItemsUtil(
       assets.rows,
-      async (asset: { tokenAddress: string; tokenId: any }) => {
-        const provider = new ethers.providers.JsonRpcProvider(rpcURL)
-        const tokenContract: INFT = new ethers.Contract(
-          asset.tokenAddress,
-          NFT.abi,
-          provider
-        ) as INFT
-        const marketContract: IMarket = new ethers.Contract(
-          marketAddress,
-          Market.abi,
-          provider
-        ) as IMarket
-        const marketItem = await marketContract.fetchMarketItemByTokenId(
-          asset.tokenId
-        )
-        let owner,
-          amountOwned = false
-        if (marketItem && marketItem.status === 0) {
-          owner = marketItem.seller
-          amountOwned = owner.toLowerCase() === queryAddress.toLowerCase()
-        } else {
-          let balanceResult
-          if (queryAddress) {
-            balanceResult = await tokenContract.balanceOf(
-              queryAddress,
-              asset.tokenId
-            )
-          }
-          if (balanceResult) {
-            let balance = balanceResult.toNumber()
-            amountOwned = balance > 0
-          }
-        }
-        // console.log('owner', owner, 'address', queryAddress)
-        return amountOwned
-      }
+      web3State
     )
+    const ownedAssets = items.filter((item) => item.amountOwned > 0)
+    const ownedAssetIds = ownedAssets.map((asset) => {
+      return { tokenId: asset.tokenId, tokenAddress: asset.tokenAddress }
+    })
 
     res.statusCode = 200
     // @ts-ignore
     res.json({
       status: 'success',
-      data: ownedAssets,
-      total: ownedAssets.length,
-      //  TODO
-      nextPage: +nextPage + limit,
+      data: ownedAssetIds,
+      total: ownedAssetIds.length,
     })
   })
 

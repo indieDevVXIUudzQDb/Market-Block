@@ -5,8 +5,8 @@ import { DigitalItem, MarketItem } from '../pages/item/[...slug]'
 interface Props {
   opened: boolean
   setOpened: (o: boolean) => void
-  item: DigitalItem | MarketItem
-  onConfirmClick: (item: DigitalItem | MarketItem, amount: string) => void
+  item: DigitalItem
+  onConfirmClick: (item: DigitalItem, amount: string) => void
 }
 export function ApproveModal(props: Props) {
   const { item, opened, setOpened, onConfirmClick } = props

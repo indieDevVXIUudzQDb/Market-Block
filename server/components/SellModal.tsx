@@ -5,12 +5,8 @@ import { DigitalItem, MarketItem } from '../pages/item/[...slug]'
 interface Props {
   opened: boolean
   setOpened: (o: boolean) => void
-  item: DigitalItem | MarketItem
-  onConfirmClick: (
-    item: DigitalItem | MarketItem,
-    price: string,
-    amount: string
-  ) => void
+  item: DigitalItem
+  onConfirmClick: (item: DigitalItem, price: string, amount: string) => void
 }
 export function SellModal(props: Props) {
   const { item, opened, setOpened, onConfirmClick } = props

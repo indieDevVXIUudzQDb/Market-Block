@@ -9,7 +9,6 @@ const handler = nextConnect()
       // @ts-ignore
       query: { nextPage },
     } = req
-    const limit = 20
     const assets = await models.assets.findAndCountAll({
       attributes: {
         exclude: [],
@@ -18,8 +17,6 @@ const handler = nextConnect()
         // Will escape title and validate DESC against a list of valid direction parameters
         ['id', 'DESC'],
       ],
-      offset: nextPage ? +nextPage : 0,
-      limit,
     })
 
     res.statusCode = 200
@@ -28,7 +25,6 @@ const handler = nextConnect()
       status: 'success',
       data: assets.rows,
       total: assets.count,
-      nextPage: +nextPage + limit,
     })
   })
 

@@ -40,7 +40,9 @@ export const loadMarketItemUtil = async (
     Market.abi,
     provider
   ) as IMarket
-  let marketRawItems, meta, tokenUri
+  let marketRawItems: string | any[] = [],
+    meta,
+    tokenUri
   try {
     tokenUri = await tokenContract.uri(tokenId)
     meta = await axios.get(tokenUri)
@@ -50,9 +52,8 @@ export const loadMarketItemUtil = async (
     }
   }
   try {
-    marketRawItems = await marketContract.fetchMarketItemsForTokenByStatus(
-      tokenId.toString(),
-      0
+    marketRawItems = await marketContract.fetchMarketItemsForToken(
+      tokenId.toString()
     )
     console.log({ marketRawItems })
   } catch (e) {
@@ -79,32 +80,28 @@ export const loadMarketItemUtil = async (
     let price = ethers.utils.formatUnits(marketData.price.toString(), 'ether')
 
     const marketItem: MarketItem = {
-      tokenId,
-      tokenAddress,
       price,
       itemId: marketData.itemId.toNumber() as number,
       seller: marketData.seller as string,
       owner: marketData.owner as string,
-      image: meta.data.image as string,
-      name: meta.data.name as string,
-      description: meta.data.description as string,
-      // @ts-ignore
-      tokenUri,
-      amountOwned,
-      amountApproved,
-      meta,
-      available: marketData.status === 0,
+      amountAvailable: marketData.remainingAmount.toNumber() as number,
+      isSeller:
+        marketData.seller.toLowerCase() === web3State.address?.toLowerCase(),
     }
     const isCurrentOwner =
       marketItem.seller.toLowerCase() === web3State.address?.toLowerCase()
-    if (marketItem.available && isCurrentOwner) {
-      amountOwned += marketItem.amountListed
+    if (marketItem && isCurrentOwner) {
+      amountOwned += marketItem.amountAvailable
     }
     console.log({ marketItem })
     marketItems.push(marketItem)
   }
   if (web3State.address) {
-    const result = await tokenContract.getApproved(marketAddress, tokenId)
+    const result = await tokenContract.getApprovedForSeller(
+      web3State.address,
+      marketAddress,
+      tokenId
+    )
     amountApproved = result.toNumber()
     console.log({ amountApproved })
   }
@@ -128,7 +125,7 @@ export const loadMarketItemUtil = async (
 export const loadMarketItemsUtil = async (
   assets: any[],
   web3State: Web3State
-): Promise<(DigitalItem | MarketItem)[]> => {
+): Promise<DigitalItem[]> => {
   const items = await Promise.all(
     assets.map(
       async (asset) =>
@@ -153,7 +150,8 @@ export const buyMarketItemUtil = async (
     Market.abi,
     signer
   ) as IMarket
-  const price = ethers.utils.parseUnits(marketItem.price.toString(), 'ether')
+  const totalPrice: number = Number(marketItem.price) * Number(amount)
+  const price = ethers.utils.parseUnits(totalPrice.toString(), 'ether')
   const transaction = await contract.createMarketSale(
     marketItem.itemId,
     amount,

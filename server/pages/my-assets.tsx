@@ -17,9 +17,7 @@ const MyAssets: (props: {
 }) => JSX.Element = (props: { origin: string; nextPageUrl: string }) => {
   const { origin, nextPageUrl } = props
 
-  const [marketItems, setMarketItems] = useState<(DigitalItem | MarketItem)[]>(
-    []
-  )
+  const [marketItems, setMarketItems] = useState<DigitalItem[]>([])
   const [loading, setLoading] = useState<boolean>(false)
 
   const web3State: Web3State = useWeb3State()

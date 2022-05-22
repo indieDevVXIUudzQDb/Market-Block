@@ -9,7 +9,7 @@ import {
   Table,
   Title,
 } from '@mantine/core'
-import { useEffect, useState } from 'react'
+import { ReactElement, useEffect, useState } from 'react'
 import { Layout } from '../../components/Layout'
 import { useRouter } from 'next/router'
 import { Prism } from '@mantine/prism'
@@ -43,22 +43,13 @@ export interface DigitalItem {
   marketItems: MarketItem[]
 }
 
-export interface MarketItem extends DigitalItem {
+export interface MarketItem {
   price: string
   itemId: number
   seller: string
   owner: string
-  sold: boolean
-  available: boolean
-}
-
-export const isMarketItem = (object: any): object is MarketItem => {
-  return 'price' in object
-}
-
-export const isDigitalItem = (object: any): object is MarketItem => {
-  const result = 'price' in object
-  return !result
+  amountAvailable: number
+  isSeller: boolean
 }
 
 const ItemDetail: NextPage = () => {
@@ -67,7 +58,8 @@ const ItemDetail: NextPage = () => {
   // console.log({ router })
   const web3State: Web3State = useWeb3State()
 
-  const [item, setItem] = useState<DigitalItem | MarketItem | null>()
+  const [item, setItem] = useState<DigitalItem | null>()
+  const [targetMarketItem, setTargetMarketItem] = useState<MarketItem | null>()
   const [loading, setLoading] = useState<boolean>(false)
   const [sellOpened, setSellOpened] = useState(false)
   const [approveOpened, setApproveOpened] = useState(false)
@@ -160,54 +152,6 @@ const ItemDetail: NextPage = () => {
     loadMarketItem()
   }, [slug, web3State.address])
 
-  const elements = [
-    {
-      tokenId: 1,
-      price: 12.011,
-      address: 'kdfsjh23k4jkhlk23432lk43kj42',
-      amount: 1,
-    },
-    {
-      tokenId: 1,
-      price: 14.007,
-      address: 'kdfsjh23k4jkhlk23432lk43kj42',
-      amount: 2,
-    },
-    {
-      tokenId: 1,
-      price: 88.906,
-      address: 'kdfsjh23k4jkhlk23432lk43kj42',
-      amount: 1,
-    },
-    {
-      tokenId: 1,
-      price: 137.33,
-      address: 'kdfsjh23k4jkhlk23432lk43kj42',
-      amount: 3,
-    },
-    {
-      tokenId: 1,
-      price: 140.12,
-      address: 'kdfsjh23k4jkhlk23432lk43kj42',
-      amount: 1,
-    },
-  ]
-
-  const rows = elements.map((element, index) => (
-    <tr key={index}>
-      <td>{element.address}</td>
-      <td>{element.amount}</td>
-      <td>
-        {element.price} {CURRENCY_NAME}
-      </td>
-      <td>
-        <Button color={'green'} onClick={() => setBuyOpened(true)}>
-          Buy
-        </Button>
-      </td>
-    </tr>
-  ))
-
   return (
     <Layout web3State={web3State}>
       {!loading && !item ? (
@@ -228,21 +172,21 @@ const ItemDetail: NextPage = () => {
                 onConfirmClick={approveMarketSale}
                 item={item}
               />
-              {isMarketItem(item) ? (
+              {targetMarketItem ? (
                 <CancelListingModal
                   opened={cancelListingOpened}
                   setOpened={setCancelListingOpened}
                   onConfirmClick={cancelMarketSale}
-                  item={item}
+                  item={targetMarketItem}
                 />
               ) : null}
 
-              {isDigitalItem(item) ? (
+              {targetMarketItem ? (
                 <BuyModal
                   opened={buyOpened}
                   setOpened={setBuyOpened}
                   onConfirmClick={buyMarketItem}
-                  item={item}
+                  item={targetMarketItem}
                 />
               ) : null}
             </>
@@ -310,13 +254,6 @@ const ItemDetail: NextPage = () => {
                   {item.amountOwned}
                 </p>
               </Group>
-              <Group position={'left'}>
-                <p>
-                  <b>Quantiy Listed for Sale: </b>
-                  <br />
-                  {item.amountListed}
-                </p>
-              </Group>
               {!web3State.connected ? (
                 <Group position={'left'} grow>
                   <Button color={'gray'}>Wallet not connected</Button>
@@ -324,22 +261,6 @@ const ItemDetail: NextPage = () => {
                 </Group>
               ) : null}
 
-              {item &&
-              isMarketItem(item) &&
-              item.amountOwned &&
-              item.available ? (
-                <Group position={'left'} grow>
-                  <Button
-                    color={'yellow'}
-                    onClick={() => {
-                      setCancelListingOpened(true)
-                    }}
-                  >
-                    Cancel Sale
-                  </Button>
-                  <div />
-                </Group>
-              ) : null}
               {item && item.amountOwned && item.amountApproved > 0 ? (
                 <Group position={'left'} grow>
                   <Button
@@ -347,8 +268,7 @@ const ItemDetail: NextPage = () => {
                       setSellOpened(true)
                     }}
                   >
-                    Sell - {item.amountApproved}
-                    &nbsp; available
+                    List for Sale
                   </Button>
                   <div />
                 </Group>
@@ -361,34 +281,10 @@ const ItemDetail: NextPage = () => {
                       setApproveOpened(true)
                     }}
                   >
-                    Approve for Sale - {item.amountOwned - item.amountApproved}
-                    &nbsp; available
+                    Approve for Sale
                   </Button>
                   <div />
                 </Group>
-              ) : null}
-              {item && isMarketItem(item) && !item.amountOwned ? (
-                <>
-                  <Group position={'left'}>
-                    <p>
-                      <b>Price:</b> <br />{' '}
-                      <b className={'text-3xl'}>
-                        {item.price} {CURRENCY_NAME}
-                      </b>
-                    </p>
-                  </Group>
-                  <Group position={'apart'} grow className={'mt-2'}>
-                    <Button
-                      color={'green'}
-                      disabled={!item.available}
-                      onClick={() => {
-                        setBuyOpened(true)
-                      }}
-                    >
-                      Buy Now
-                    </Button>
-                  </Group>
-                </>
               ) : null}
 
               <Table>
@@ -399,7 +295,14 @@ const ItemDetail: NextPage = () => {
                     <th>Price</th>
                   </tr>
                 </thead>
-                <tbody>{rows}</tbody>
+                <tbody>
+                  <MarketItemRows
+                    marketItems={item.marketItems}
+                    setBuyOpened={setBuyOpened}
+                    setCancelListingOpened={setCancelListingOpened}
+                    setTargetMarketItem={setTargetMarketItem}
+                  />
+                </tbody>
               </Table>
             </SimpleGrid>
           </Card>
@@ -410,3 +313,58 @@ const ItemDetail: NextPage = () => {
 }
 
 export default ItemDetail
+
+const MarketItemRows = (props: {
+  marketItems: MarketItem[]
+  setCancelListingOpened: (val: boolean) => void
+  setBuyOpened: (val: boolean) => void
+  setTargetMarketItem: (val: MarketItem) => void
+}): ReactElement<any, any> => {
+  const {
+    marketItems,
+    setCancelListingOpened,
+    setBuyOpened,
+    setTargetMarketItem,
+  } = props
+  return (
+    <>
+      {marketItems.map((element, index) => (
+        <tr key={index}>
+          <td>{element.seller}</td>
+          <td>{element.amountAvailable}</td>
+          <td>
+            {element.price} {CURRENCY_NAME}
+          </td>
+          <td>
+            {element.isSeller ? (
+              <Group grow className={'mt-2'}>
+                <Button
+                  color={'red'}
+                  onClick={async () => {
+                    await setTargetMarketItem(element)
+                    setCancelListingOpened(true)
+                  }}
+                >
+                  Cancel Listing
+                </Button>
+              </Group>
+            ) : (
+              <Group grow className={'mt-2'}>
+                <Button
+                  color={'green'}
+                  disabled={element.amountAvailable === 0}
+                  onClick={async () => {
+                    await setTargetMarketItem(element)
+                    setBuyOpened(true)
+                  }}
+                >
+                  Buy Now
+                </Button>
+              </Group>
+            )}
+          </td>
+        </tr>
+      ))}
+    </>
+  )
+}
