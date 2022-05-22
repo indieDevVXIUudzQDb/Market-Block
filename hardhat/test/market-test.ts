@@ -104,29 +104,17 @@ describe("Market", function () {
     expect(itemResults[0].tokenId.toString()).to.equal("1");
 
     // Fetch available market items
-    itemResults = await market.fetchMarketItemsByStatus(0);
-    expect(itemResults.length).to.equal(1);
-    expect(itemResults[0].tokenId.toString()).to.equal("3");
-
-    itemResults = await market.fetchMarketItemsForTokenByStatus(3, 0);
+    itemResults = await market.fetchMarketItemsForToken(3);
     expect(itemResults.length).to.equal(1);
     expect(itemResults[0].tokenId.toString()).to.equal("3");
 
     // Fetch sold market items
-    itemResults = await market.fetchMarketItemsByStatus(1);
-    expect(itemResults.length).to.equal(1);
-    expect(itemResults[0].tokenId.toString()).to.equal("1");
-
-    itemResults = await market.fetchMarketItemsForTokenByStatus(1, 1);
+    itemResults = await market.fetchMarketItemsForToken(1);
     expect(itemResults.length).to.equal(1);
     expect(itemResults[0].tokenId.toString()).to.equal("1");
 
     // Fetch cancelled market items
-    itemResults = await market.fetchMarketItemsByStatus(2);
-    expect(itemResults.length).to.equal(1);
-    expect(itemResults[0].tokenId.toString()).to.equal("2");
-
-    itemResults = await market.fetchMarketItemsForTokenByStatus(2, 2);
+    itemResults = await market.fetchMarketItemsForToken(2);
     expect(itemResults.length).to.equal(1);
     expect(itemResults[0].tokenId.toString()).to.equal("2");
 
@@ -136,21 +124,21 @@ describe("Market", function () {
     expect(item1.price.toString()).to.equal(auctionPrice1.toString());
     expect(item1.seller).to.equal("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266");
     expect(item1.owner).to.equal(buyer1.address);
-    expect(item1.status).to.equal(1);
+    expect(item1.remainingAmount).to.equal(0);
 
     const item2 = await market.fetchMarketItem(2);
     expect(item2.tokenId.toString()).to.equal("2");
     expect(item2.price.toString()).to.equal(auctionPrice2.toString());
     expect(item2.seller).to.equal("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266");
     expect(item2.owner).to.equal("0x0000000000000000000000000000000000000000");
-    expect(item2.status).to.equal(2);
+    expect(item2.remainingAmount).to.equal(0);
 
     const item3 = await market.fetchMarketItem(3);
     expect(item3.tokenId.toString()).to.equal("3");
     expect(item3.price.toString()).to.equal(auctionPrice3.toString());
     expect(item3.seller).to.equal("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266");
     expect(item3.owner).to.equal("0x0000000000000000000000000000000000000000");
-    expect(item3.status).to.equal(0);
+    expect(item3.remainingAmount).to.equal(1);
   });
 
   it("Should allow resale of Item", async function () {
@@ -215,7 +203,7 @@ describe("Market", function () {
     expect(item1.price.toString()).to.equal(auctionPrice1.toString());
     expect(item1.seller).to.equal(seller.address);
     expect(item1.owner).to.equal(buyer1.address);
-    expect(item1.status).to.equal(1);
+    expect(item1.remainingAmount).to.equal(0);
 
     // Check final details of tokens
     const item2 = await market.fetchMarketItem(2);
@@ -223,7 +211,7 @@ describe("Market", function () {
     expect(item2.price.toString()).to.equal(auctionPrice2.toString());
     expect(item2.seller).to.equal(buyer1.address);
     expect(item2.owner).to.equal(buyer2.address);
-    expect(item2.status).to.equal(1);
+    expect(item2.remainingAmount).to.equal(0);
   });
 
   it("Should fetch most available market items for token", async function () {
@@ -249,7 +237,7 @@ describe("Market", function () {
 
     let recentMarketItem = await market.fetchMarketItemByTokenId("1");
     expect(recentMarketItem.itemId.toString()).to.equal("1");
-    expect(recentMarketItem.status).to.equal(0);
+    expect(recentMarketItem.remainingAmount).to.equal(1);
 
     // Create a sale
     await market
@@ -272,7 +260,7 @@ describe("Market", function () {
 
     recentMarketItem = await market.fetchMarketItemByTokenId("1");
     expect(recentMarketItem.itemId.toString()).to.equal("2");
-    expect(recentMarketItem.status).to.equal(0);
+    expect(recentMarketItem.remainingAmount).to.equal(1);
 
     // Create 2nd sale
     await market
@@ -281,7 +269,7 @@ describe("Market", function () {
 
     recentMarketItem = await market.fetchMarketItemByTokenId("1");
     expect(recentMarketItem.itemId.toString()).to.equal("2");
-    expect(recentMarketItem.status).to.equal(1);
+    expect(recentMarketItem.remainingAmount).to.equal(0);
 
     // Relist item for sale for 2nd time
     await nft.connect(buyer2).approve(marketAddress, 1, 1);
@@ -296,7 +284,7 @@ describe("Market", function () {
 
     recentMarketItem = await market.fetchMarketItemByTokenId("1");
     expect(recentMarketItem.itemId.toString()).to.equal("3");
-    expect(recentMarketItem.status).to.equal(2);
+    expect(recentMarketItem.remainingAmount).to.equal(0);
   });
 
   it("Should contain initial provided listing price, and should be updatable", async function () {

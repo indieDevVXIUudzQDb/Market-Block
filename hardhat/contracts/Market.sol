@@ -27,7 +27,7 @@ contract Market is IERC1155Receiver, ReentrancyGuard {
         address payable seller;
         address payable owner;
         uint256 price;
-        AvailabilityStatus status;
+        uint256 remainingAmount;
     }
 
     event MarketItemCreated (
@@ -37,12 +37,12 @@ contract Market is IERC1155Receiver, ReentrancyGuard {
         address seller,
         address owner,
         uint256 price,
-        AvailabilityStatus status
+        uint256 remainingAmount
     );
 
     event MarketItemStatusChange (
         uint indexed itemId,
-        AvailabilityStatus status
+        uint256 remainingAmount
     );
 
     constructor(uint256 _listingPrice){
@@ -108,11 +108,11 @@ contract Market is IERC1155Receiver, ReentrancyGuard {
             payable(msg.sender),
             payable(address(0)),
             price,
-            AvailabilityStatus.AVAILABLE
+            amount
         );
         IERC1155(nftContract).safeTransferFrom(msg.sender, address(this), tokenId, amount, data);
 
-        emit MarketItemCreated(itemId, nftContract, tokenId, msg.sender, address(0), price, AvailabilityStatus.AVAILABLE);
+        emit MarketItemCreated(itemId, nftContract, tokenId, msg.sender, address(0), price, amount);
     }
 
     function createMarketSale(
@@ -122,37 +122,37 @@ contract Market is IERC1155Receiver, ReentrancyGuard {
     ) public payable nonReentrant {
         uint price = idToMarketItem[itemId].price;
         uint tokenId = idToMarketItem[itemId].tokenId;
-        require(idToMarketItem[itemId].status == AvailabilityStatus.AVAILABLE, "This item is not available");
+        require(idToMarketItem[itemId].remainingAmount >= amount, "This item is not available");
         require(msg.value == price, "Please submit the asking price in order to complete the purchase");
 
         idToMarketItem[itemId].seller.transfer(msg.value);
         address nftContract = idToMarketItem[itemId].nftContract;
         IERC1155(nftContract).safeTransferFrom(address(this), msg.sender, tokenId, amount, data);
         idToMarketItem[itemId].owner = payable(msg.sender);
-        idToMarketItem[itemId].status = AvailabilityStatus.SOLD;
+        idToMarketItem[itemId].remainingAmount -= amount;
         _itemsSold.increment();
         payable(owner).transfer(listingPrice);
-        emit MarketItemStatusChange(itemId, AvailabilityStatus.SOLD);
+        emit MarketItemStatusChange(itemId, idToMarketItem[itemId].remainingAmount);
 
     }
 
     function cancelMarketItem(uint256 itemId, uint256 amount, bytes memory data) public {
         address seller = idToMarketItem[itemId].seller;
         require(seller == msg.sender, "Only item seller can cancel a market listing.");
-        require(idToMarketItem[itemId].status != AvailabilityStatus.SOLD, "This item has already been sold");
-        require(idToMarketItem[itemId].status != AvailabilityStatus.CANCELLED, "This item sale has already been cancelled");
+        require(idToMarketItem[itemId].remainingAmount >= amount, "This item is not available");
         uint256 tokenId = idToMarketItem[itemId].tokenId;
         address nftContract = idToMarketItem[itemId].nftContract;
         IERC1155(nftContract).safeTransferFrom(address(this), idToMarketItem[itemId].seller, tokenId, amount, data);
-        idToMarketItem[itemId].status = AvailabilityStatus.CANCELLED;
+        idToMarketItem[itemId].remainingAmount -= amount;
 
-        emit MarketItemStatusChange(itemId, AvailabilityStatus.CANCELLED);
+        emit MarketItemStatusChange(itemId, idToMarketItem[itemId].remainingAmount);
     }
 
     function fetchMarketItem(uint256 itemId) public view returns (MarketItem memory){
         return idToMarketItem[itemId];
     }
 
+//    TODO remove this
     function fetchMarketItemByTokenId(uint256 tokenId) public view returns (MarketItem memory){
         uint totalItemCount = _itemIds.current();
         uint itemCount = 0;
@@ -165,7 +165,6 @@ contract Market is IERC1155Receiver, ReentrancyGuard {
         }
 
         MarketItem memory item;
-        // TODO reverse and return on first match
         for (uint i = 0; i < totalItemCount; i++) {
             if (idToMarketItem[i + 1].tokenId == tokenId) {
                 uint currentId = i + 1;
@@ -194,43 +193,20 @@ contract Market is IERC1155Receiver, ReentrancyGuard {
     }
 
 
-    function fetchMarketItemsByStatus(AvailabilityStatus status) public view returns (MarketItem[] memory){
+    function fetchMarketItemsForToken(uint256 tokenId) public view returns (MarketItem[] memory){
         uint totalItemCount = _itemIds.current();
         uint itemCount = 0;
         uint currentIndex = 0;
 
         for (uint i = 0; i < totalItemCount; i++) {
-            if (idToMarketItem[i + 1].status == status) {
+            if (idToMarketItem[i + 1].tokenId == tokenId) {
                 itemCount += 1;
             }
         }
 
         MarketItem[] memory items = new MarketItem[](itemCount);
         for (uint i = 0; i < totalItemCount; i++) {
-            if (idToMarketItem[i + 1].status == status) {
-                uint currentId = i + 1;
-                MarketItem storage currentItem = idToMarketItem[currentId];
-                items[currentIndex] = currentItem;
-                currentIndex += 1;
-            }
-        }
-        return items;
-    }
-
-    function fetchMarketItemsForTokenByStatus(uint256 tokenId, AvailabilityStatus status) public view returns (MarketItem[] memory){
-        uint totalItemCount = _itemIds.current();
-        uint itemCount = 0;
-        uint currentIndex = 0;
-
-        for (uint i = 0; i < totalItemCount; i++) {
-            if (idToMarketItem[i + 1].tokenId == tokenId && idToMarketItem[i + 1].status == status) {
-                itemCount += 1;
-            }
-        }
-
-        MarketItem[] memory items = new MarketItem[](itemCount);
-        for (uint i = 0; i < totalItemCount; i++) {
-            if (idToMarketItem[i + 1].tokenId == tokenId && idToMarketItem[i + 1].status == status) {
+            if (idToMarketItem[i + 1].tokenId == tokenId) {
                 uint currentId = i + 1;
                 MarketItem storage currentItem = idToMarketItem[currentId];
                 items[currentIndex] = currentItem;

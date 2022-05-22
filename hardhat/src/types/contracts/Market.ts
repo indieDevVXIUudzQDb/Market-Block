@@ -35,7 +35,7 @@ export declare namespace Market {
     seller: string;
     owner: string;
     price: BigNumberish;
-    status: BigNumberish;
+    remainingAmount: BigNumberish;
   };
 
   export type MarketItemStructOutput = [
@@ -45,7 +45,7 @@ export declare namespace Market {
     string,
     string,
     BigNumber,
-    number
+    BigNumber
   ] & {
     itemId: BigNumber;
     nftContract: string;
@@ -53,7 +53,7 @@ export declare namespace Market {
     seller: string;
     owner: string;
     price: BigNumber;
-    status: number;
+    remainingAmount: BigNumber;
   };
 }
 
@@ -65,9 +65,8 @@ export interface MarketInterface extends utils.Interface {
     "fetchMarketItem(uint256)": FunctionFragment;
     "fetchMarketItemByTokenId(uint256)": FunctionFragment;
     "fetchMarketItems()": FunctionFragment;
-    "fetchMarketItemsByStatus(uint8)": FunctionFragment;
     "fetchMarketItemsCreated()": FunctionFragment;
-    "fetchMarketItemsForTokenByStatus(uint256,uint8)": FunctionFragment;
+    "fetchMarketItemsForToken(uint256)": FunctionFragment;
     "fetchMyMarketItems()": FunctionFragment;
     "getListingPrice()": FunctionFragment;
     "onERC1155BatchReceived(address,address,uint256[],uint256[],bytes)": FunctionFragment;
@@ -84,9 +83,8 @@ export interface MarketInterface extends utils.Interface {
       | "fetchMarketItem"
       | "fetchMarketItemByTokenId"
       | "fetchMarketItems"
-      | "fetchMarketItemsByStatus"
       | "fetchMarketItemsCreated"
-      | "fetchMarketItemsForTokenByStatus"
+      | "fetchMarketItemsForToken"
       | "fetchMyMarketItems"
       | "getListingPrice"
       | "onERC1155BatchReceived"
@@ -120,16 +118,12 @@ export interface MarketInterface extends utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "fetchMarketItemsByStatus",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
     functionFragment: "fetchMarketItemsCreated",
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "fetchMarketItemsForTokenByStatus",
-    values: [BigNumberish, BigNumberish]
+    functionFragment: "fetchMarketItemsForToken",
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "fetchMyMarketItems",
@@ -181,15 +175,11 @@ export interface MarketInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "fetchMarketItemsByStatus",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "fetchMarketItemsCreated",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "fetchMarketItemsForTokenByStatus",
+    functionFragment: "fetchMarketItemsForToken",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -218,8 +208,8 @@ export interface MarketInterface extends utils.Interface {
   ): Result;
 
   events: {
-    "MarketItemCreated(uint256,address,uint256,address,address,uint256,uint8)": EventFragment;
-    "MarketItemStatusChange(uint256,uint8)": EventFragment;
+    "MarketItemCreated(uint256,address,uint256,address,address,uint256,uint256)": EventFragment;
+    "MarketItemStatusChange(uint256,uint256)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "MarketItemCreated"): EventFragment;
@@ -233,10 +223,10 @@ export interface MarketItemCreatedEventObject {
   seller: string;
   owner: string;
   price: BigNumber;
-  status: number;
+  remainingAmount: BigNumber;
 }
 export type MarketItemCreatedEvent = TypedEvent<
-  [BigNumber, string, BigNumber, string, string, BigNumber, number],
+  [BigNumber, string, BigNumber, string, string, BigNumber, BigNumber],
   MarketItemCreatedEventObject
 >;
 
@@ -245,10 +235,10 @@ export type MarketItemCreatedEventFilter =
 
 export interface MarketItemStatusChangeEventObject {
   itemId: BigNumber;
-  status: number;
+  remainingAmount: BigNumber;
 }
 export type MarketItemStatusChangeEvent = TypedEvent<
-  [BigNumber, number],
+  [BigNumber, BigNumber],
   MarketItemStatusChangeEventObject
 >;
 
@@ -319,18 +309,12 @@ export interface Market extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[Market.MarketItemStructOutput[]]>;
 
-    fetchMarketItemsByStatus(
-      status: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<[Market.MarketItemStructOutput[]]>;
-
     fetchMarketItemsCreated(
       overrides?: CallOverrides
     ): Promise<[Market.MarketItemStructOutput[]]>;
 
-    fetchMarketItemsForTokenByStatus(
+    fetchMarketItemsForToken(
       tokenId: BigNumberish,
-      status: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[Market.MarketItemStructOutput[]]>;
 
@@ -406,18 +390,12 @@ export interface Market extends BaseContract {
     overrides?: CallOverrides
   ): Promise<Market.MarketItemStructOutput[]>;
 
-  fetchMarketItemsByStatus(
-    status: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<Market.MarketItemStructOutput[]>;
-
   fetchMarketItemsCreated(
     overrides?: CallOverrides
   ): Promise<Market.MarketItemStructOutput[]>;
 
-  fetchMarketItemsForTokenByStatus(
+  fetchMarketItemsForToken(
     tokenId: BigNumberish,
-    status: BigNumberish,
     overrides?: CallOverrides
   ): Promise<Market.MarketItemStructOutput[]>;
 
@@ -493,18 +471,12 @@ export interface Market extends BaseContract {
       overrides?: CallOverrides
     ): Promise<Market.MarketItemStructOutput[]>;
 
-    fetchMarketItemsByStatus(
-      status: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<Market.MarketItemStructOutput[]>;
-
     fetchMarketItemsCreated(
       overrides?: CallOverrides
     ): Promise<Market.MarketItemStructOutput[]>;
 
-    fetchMarketItemsForTokenByStatus(
+    fetchMarketItemsForToken(
       tokenId: BigNumberish,
-      status: BigNumberish,
       overrides?: CallOverrides
     ): Promise<Market.MarketItemStructOutput[]>;
 
@@ -544,14 +516,14 @@ export interface Market extends BaseContract {
   };
 
   filters: {
-    "MarketItemCreated(uint256,address,uint256,address,address,uint256,uint8)"(
+    "MarketItemCreated(uint256,address,uint256,address,address,uint256,uint256)"(
       itemId?: BigNumberish | null,
       nftContract?: string | null,
       tokenId?: null,
       seller?: null,
       owner?: null,
       price?: null,
-      status?: null
+      remainingAmount?: null
     ): MarketItemCreatedEventFilter;
     MarketItemCreated(
       itemId?: BigNumberish | null,
@@ -560,16 +532,16 @@ export interface Market extends BaseContract {
       seller?: null,
       owner?: null,
       price?: null,
-      status?: null
+      remainingAmount?: null
     ): MarketItemCreatedEventFilter;
 
-    "MarketItemStatusChange(uint256,uint8)"(
+    "MarketItemStatusChange(uint256,uint256)"(
       itemId?: BigNumberish | null,
-      status?: null
+      remainingAmount?: null
     ): MarketItemStatusChangeEventFilter;
     MarketItemStatusChange(
       itemId?: BigNumberish | null,
-      status?: null
+      remainingAmount?: null
     ): MarketItemStatusChangeEventFilter;
   };
 
@@ -609,16 +581,10 @@ export interface Market extends BaseContract {
 
     fetchMarketItems(overrides?: CallOverrides): Promise<BigNumber>;
 
-    fetchMarketItemsByStatus(
-      status: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     fetchMarketItemsCreated(overrides?: CallOverrides): Promise<BigNumber>;
 
-    fetchMarketItemsForTokenByStatus(
+    fetchMarketItemsForToken(
       tokenId: BigNumberish,
-      status: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -691,18 +657,12 @@ export interface Market extends BaseContract {
 
     fetchMarketItems(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    fetchMarketItemsByStatus(
-      status: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
     fetchMarketItemsCreated(
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    fetchMarketItemsForTokenByStatus(
+    fetchMarketItemsForToken(
       tokenId: BigNumberish,
-      status: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
