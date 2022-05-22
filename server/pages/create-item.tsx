@@ -61,14 +61,16 @@ const CreateItem: (props: { baseApiUrl: string }) => JSX.Element = (props: {
   const web3State: Web3State = useWeb3State()
   const listItemCheckboxRef = useRef<HTMLInputElement>()
   const ipfsAwareCheckboxRef = useRef<HTMLInputElement>()
+  const permissionAwareCheckboxRef = useRef<HTMLInputElement>()
 
   const form = useForm({
     initialValues: {
-      name: 'Test',
-      description: 'test description',
+      name: '',
+      description: '',
       price: 100,
       listForSale: true,
       ipfsAware: false,
+      permissionAware: false,
       amount: 1,
     },
   })
@@ -439,33 +441,56 @@ const CreateItem: (props: { baseApiUrl: string }) => JSX.Element = (props: {
               />
             ) : null}
           </Group>
-          <Group>
-            <Alert
-              icon={<AlertCircle size={16} />}
-              title="Upload to IPFS"
+          <Alert
+            icon={<AlertCircle size={16} />}
+            title="Upload to IPFS"
+            color="blue"
+            className={'mb-5'}
+          >
+            <Checkbox
+              label={
+                'I understand the selected picture, and files will be stored in IPFS and a link will be stored on the blockchain. ' +
+                'IPFS is a distributed system for storing and accessing files, websites, applications, and data.'
+              }
+              mt="md"
+              color="blue"
+              // @ts-ignore
+              ref={ipfsAwareCheckboxRef}
+              {...form.getInputProps('ipfsAware', { type: 'checkbox' })}
+            />
+            &nbsp;{' '}
+            <Anchor href={'https://docs.ipfs.io/concepts/what-is-ipfs/'}>
+              Learn More
+            </Anchor>
+          </Alert>
+
+          <Alert
+            icon={<AlertCircle size={16} />}
+            title="Permission"
+            color="yellow"
+            className={'mb-5'}
+          >
+            <Checkbox
+              label={
+                'I am the author and/or I have permission to list this item.'
+              }
+              mt="md"
               color="yellow"
-            >
-              <Checkbox
-                label={
-                  'I understand the selected picture, and files will be stored in IPFS and a link will be stored on the blockchain. ' +
-                  'IPFS is a distributed system for storing and accessing files, websites, applications, and data.'
-                }
-                mt="md"
-                color="yellow"
-                // @ts-ignore
-                ref={ipfsAwareCheckboxRef}
-                {...form.getInputProps('ipfsAware', { type: 'checkbox' })}
-              />
-              &nbsp;{' '}
-              <Anchor href={'https://docs.ipfs.io/concepts/what-is-ipfs/'}>
-                Learn More
-              </Anchor>
-            </Alert>
-          </Group>
+              // @ts-ignore
+              ref={permissionAwareCheckboxRef}
+              {...form.getInputProps('permissionAware', { type: 'checkbox' })}
+            />
+          </Alert>
+
           <Group position="right" mt="md">
             <Button
               type="submit"
-              disabled={!ipfsAwareCheckboxRef.current?.checked}
+              disabled={
+                !ipfsAwareCheckboxRef.current?.checked == false &&
+                !permissionAwareCheckboxRef.current?.checked == false
+                  ? false
+                  : true
+              }
             >
               Create
             </Button>
