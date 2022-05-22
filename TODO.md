@@ -4,7 +4,7 @@
 - [ ] implement approve logic in server
 - [ ] implement amount in server
 - [ ] Decscription for market features
-- [ ] Rename NFT to Asset
+- [ ] Rename Fungible to Asset
 - [ ] Pagination for browse
 - [ ] About page
 

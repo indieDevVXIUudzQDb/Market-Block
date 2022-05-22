@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 
 import "hardhat/console.sol";
 
-contract NFT is IERC1155, ERC1155URIStorage {
+contract Fungible is IERC1155, ERC1155URIStorage {
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
     address contractAddress;
@@ -19,7 +19,7 @@ contract NFT is IERC1155, ERC1155URIStorage {
     event Approval(address indexed approved, uint256 indexed tokenId, uint256 indexed amount);
 
     constructor(address marketplaceAddress) ERC1155("https://game.example/api/item/{id}.json"){
-        console.log("Creating NFT:", marketplaceAddress);
+        console.log("Creating Fungible:", marketplaceAddress);
         contractAddress = marketplaceAddress;
     }
 

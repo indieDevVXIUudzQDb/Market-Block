@@ -9,7 +9,7 @@ import { useWeb3State, Web3State } from '../hooks/useWeb3State'
 import { DigitalItem, MarketItem } from './item/[...slug]'
 import { loadMarketItemsUtil } from '../utils/helpers/marketHelpers'
 import { absoluteUrl } from '../middleware/utils'
-import { marketAddress, nftAddress } from '../utils/constants/contracts'
+import { marketAddress, fungibleAddress } from '../utils/constants/contracts'
 
 const MyAssets: (props: {
   origin: string
@@ -67,7 +67,7 @@ const MyAssets: (props: {
     const contract = new ethers.Contract(marketAddress, Market.abi, signer)
     const price = ethers.utils.parseUnits(marketItem.price.toString(), 'ether')
     const transaction = await contract.createMarketSale(
-      nftAddress,
+      fungibleAddress,
       marketItem.itemId,
       {
         value: price,

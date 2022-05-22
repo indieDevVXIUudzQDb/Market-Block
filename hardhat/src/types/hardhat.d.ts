@@ -41,13 +41,13 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IERC165__factory>;
     getContractFactory(
+      name: "Fungible",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.Fungible__factory>;
+    getContractFactory(
       name: "Market",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.Market__factory>;
-    getContractFactory(
-      name: "NFT",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.NFT__factory>;
 
     getContractAt(
       name: "ERC1155",
@@ -85,15 +85,15 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.IERC165>;
     getContractAt(
+      name: "Fungible",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.Fungible>;
+    getContractAt(
       name: "Market",
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.Market>;
-    getContractAt(
-      name: "NFT",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.NFT>;
 
     // default types
     getContractFactory(

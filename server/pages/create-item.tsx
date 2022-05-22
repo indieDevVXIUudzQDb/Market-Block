@@ -42,7 +42,7 @@ import {
   createAssetUtil,
   createMarketListingUtil,
 } from '../utils/helpers/marketHelpers'
-import { nftAddress } from '../utils/constants/contracts'
+import { fungibleAddress } from '../utils/constants/contracts'
 
 const client = ipfsHttpClient({ url: `${ipfsAPIURL}` })
 
@@ -277,7 +277,7 @@ const CreateItem: (props: { baseApiUrl: string }) => JSX.Element = (props: {
       }
       const links = uploadedLinks
       // @ts-ignore
-      links.push({ name, link: `${baseUrl}/${nftAddress}/${tokenId}` })
+      links.push({ name, link: `${baseUrl}/${fungibleAddress}/${tokenId}` })
       setUploadedLinks(links)
     } catch (e) {
       // @ts-ignore

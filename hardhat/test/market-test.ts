@@ -4,7 +4,7 @@ import chai from "chai";
 // @ts-ignore
 import deepEqualInAnyOrder from "deep-equal-in-any-order";
 // eslint-disable-next-line node/no-missing-import
-import { Market, NFT } from "../src/types";
+import { Market, Fungible } from "../src/types";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 
 chai.use(deepEqualInAnyOrder);
@@ -12,12 +12,12 @@ const { expect } = chai;
 
 describe("Market", function () {
   let market: Market,
-    nft: NFT,
+    fungible: Fungible,
     seller: SignerWithAddress,
     buyer1: SignerWithAddress,
     buyer2: SignerWithAddress,
     marketAddress: string,
-    nftContractAddress: string,
+    fungibleContractAddress: string,
     emptyData: Uint8Array;
 
   beforeEach(async function () {
@@ -34,10 +34,10 @@ describe("Market", function () {
     await market.deployed();
     marketAddress = market.address;
 
-    const NFTFactory = await ethers.getContractFactory("NFT");
-    nft = await NFTFactory.deploy(marketAddress);
-    await nft.deployed();
-    nftContractAddress = nft.address;
+    const NFTFactory = await ethers.getContractFactory("Fungible");
+    fungible = await NFTFactory.deploy(marketAddress);
+    await fungible.deployed();
+    fungibleContractAddress = fungible.address;
     console.log("setup complete", "market address", marketAddress);
   });
 
@@ -49,9 +49,9 @@ describe("Market", function () {
     const auctionPrice3 = ethers.utils.parseUnits("300", "ether");
 
     // Create tokens and market items
-    await nft.createToken("https://www.mytokenlocation.com", 1, emptyData);
+    await fungible.createToken("https://www.mytokenlocation.com", 1, emptyData);
     await market.createMarketItem(
-      nftContractAddress,
+      fungibleContractAddress,
       1,
       auctionPrice1,
       1,
@@ -61,9 +61,13 @@ describe("Market", function () {
       }
     );
 
-    await nft.createToken("https://www.mytokenlocation2.com", 1, emptyData);
+    await fungible.createToken(
+      "https://www.mytokenlocation2.com",
+      1,
+      emptyData
+    );
     await market.createMarketItem(
-      nftContractAddress,
+      fungibleContractAddress,
       2,
       auctionPrice2,
       1,
@@ -73,9 +77,13 @@ describe("Market", function () {
       }
     );
 
-    await nft.createToken("https://www.mytokenlocation3.com", 1, emptyData);
+    await fungible.createToken(
+      "https://www.mytokenlocation3.com",
+      1,
+      emptyData
+    );
     await market.createMarketItem(
-      nftContractAddress,
+      fungibleContractAddress,
       3,
       auctionPrice3,
       1,
@@ -148,11 +156,11 @@ describe("Market", function () {
     const auctionPrice2 = ethers.utils.parseUnits("200", "ether");
 
     // Create tokens and market items
-    await nft.createToken("https://www.mytokenlocation.com", 1, emptyData);
-    expect(await nft.balanceOf(seller.address, 1)).to.equal(1);
+    await fungible.createToken("https://www.mytokenlocation.com", 1, emptyData);
+    expect(await fungible.balanceOf(seller.address, 1)).to.equal(1);
 
     await market.createMarketItem(
-      nftContractAddress,
+      fungibleContractAddress,
       1,
       auctionPrice1,
       1,
@@ -162,8 +170,8 @@ describe("Market", function () {
       }
     );
 
-    expect(await nft.balanceOf(seller.address, 1)).to.equal(0);
-    expect(await nft.balanceOf(marketAddress, 1)).to.equal(1);
+    expect(await fungible.balanceOf(seller.address, 1)).to.equal(0);
+    expect(await fungible.balanceOf(marketAddress, 1)).to.equal(1);
 
     // Create a sale
     await market
@@ -175,31 +183,38 @@ describe("Market", function () {
     expect(itemResults.length).to.equal(1);
     expect(itemResults[0].tokenId.toString()).to.equal("1");
 
-    expect(await nft.balanceOf(seller.address, 1)).to.equal(0);
-    expect(await nft.balanceOf(buyer1.address, 1)).to.equal(1);
+    expect(await fungible.balanceOf(seller.address, 1)).to.equal(0);
+    expect(await fungible.balanceOf(buyer1.address, 1)).to.equal(1);
 
     expect(
-      await nft.getApprovedForSeller(seller.address, marketAddress, 1)
+      await fungible.getApprovedForSeller(seller.address, marketAddress, 1)
     ).to.equal(0);
-    await nft.connect(buyer1).approve(marketAddress, 1, 1);
+    await fungible.connect(buyer1).approve(marketAddress, 1, 1);
     expect(
-      await nft.getApprovedForSeller(buyer1.address, marketAddress, 1)
+      await fungible.getApprovedForSeller(buyer1.address, marketAddress, 1)
     ).to.equal(1);
 
     // Relist item for sale
     await market
       .connect(buyer1)
-      .createMarketItem(nftContractAddress, 1, auctionPrice2, 1, emptyData, {
-        value: listingPrice,
-      });
+      .createMarketItem(
+        fungibleContractAddress,
+        1,
+        auctionPrice2,
+        1,
+        emptyData,
+        {
+          value: listingPrice,
+        }
+      );
 
     // Create 2nd sale
     await market
       .connect(buyer2)
       .createMarketSale(2, 1, emptyData, { value: auctionPrice2 });
 
-    expect(await nft.balanceOf(buyer1.address, 1)).to.equal(0);
-    expect(await nft.balanceOf(buyer2.address, 1)).to.equal(1);
+    expect(await fungible.balanceOf(buyer1.address, 1)).to.equal(0);
+    expect(await fungible.balanceOf(buyer2.address, 1)).to.equal(1);
 
     // Check final details of tokens
     const item1 = await market.fetchMarketItem(1);
@@ -226,10 +241,10 @@ describe("Market", function () {
     const auctionPrice3 = ethers.utils.parseUnits("300", "ether");
 
     // Create tokens and market items
-    await nft.createToken("https://www.mytokenlocation.com", 1, emptyData);
-    expect(await nft.balanceOf(seller.address, 1)).to.equal(1);
+    await fungible.createToken("https://www.mytokenlocation.com", 1, emptyData);
+    expect(await fungible.balanceOf(seller.address, 1)).to.equal(1);
     await market.createMarketItem(
-      nftContractAddress,
+      fungibleContractAddress,
       1,
       auctionPrice1,
       1,
@@ -254,13 +269,20 @@ describe("Market", function () {
     expect(itemResults[0].itemId.toString()).to.equal("1");
 
     // Relist item for sale
-    await nft.connect(buyer1).approve(marketAddress, 1, 1);
+    await fungible.connect(buyer1).approve(marketAddress, 1, 1);
 
     await market
       .connect(buyer1)
-      .createMarketItem(nftContractAddress, 1, auctionPrice2, 1, emptyData, {
-        value: listingPrice,
-      });
+      .createMarketItem(
+        fungibleContractAddress,
+        1,
+        auctionPrice2,
+        1,
+        emptyData,
+        {
+          value: listingPrice,
+        }
+      );
 
     recentMarketItem = await market.fetchMarketItemByTokenId("1");
     expect(recentMarketItem.itemId.toString()).to.equal("2");
@@ -276,13 +298,20 @@ describe("Market", function () {
     expect(recentMarketItem.remainingAmount).to.equal(0);
 
     // Relist item for sale for 2nd time
-    await nft.connect(buyer2).approve(marketAddress, 1, 1);
+    await fungible.connect(buyer2).approve(marketAddress, 1, 1);
 
     await market
       .connect(buyer2)
-      .createMarketItem(nftContractAddress, 1, auctionPrice3, 1, emptyData, {
-        value: listingPrice,
-      });
+      .createMarketItem(
+        fungibleContractAddress,
+        1,
+        auctionPrice3,
+        1,
+        emptyData,
+        {
+          value: listingPrice,
+        }
+      );
     // Cancel it
     await market.connect(buyer2).cancelMarketItem("3", 1, emptyData);
 
@@ -298,11 +327,15 @@ describe("Market", function () {
     const auctionPrice2 = ethers.utils.parseUnits("200", "ether");
 
     // Create tokens and market items
-    await nft.createToken("https://www.mytokenlocation.com", 10, emptyData);
-    expect(await nft.balanceOf(seller.address, 1)).to.equal(10);
+    await fungible.createToken(
+      "https://www.mytokenlocation.com",
+      10,
+      emptyData
+    );
+    expect(await fungible.balanceOf(seller.address, 1)).to.equal(10);
 
     await market.createMarketItem(
-      nftContractAddress,
+      fungibleContractAddress,
       1,
       auctionPrice1,
       1,
@@ -312,8 +345,8 @@ describe("Market", function () {
       }
     );
 
-    expect(await nft.balanceOf(seller.address, 1)).to.equal(9);
-    expect(await nft.balanceOf(marketAddress, 1)).to.equal(1);
+    expect(await fungible.balanceOf(seller.address, 1)).to.equal(9);
+    expect(await fungible.balanceOf(marketAddress, 1)).to.equal(1);
 
     // Create a sale
     await market
@@ -325,23 +358,30 @@ describe("Market", function () {
     expect(itemResults.length).to.equal(1);
     expect(itemResults[0].tokenId.toString()).to.equal("1");
 
-    expect(await nft.balanceOf(seller.address, 1)).to.equal(9);
-    expect(await nft.balanceOf(buyer1.address, 1)).to.equal(1);
+    expect(await fungible.balanceOf(seller.address, 1)).to.equal(9);
+    expect(await fungible.balanceOf(buyer1.address, 1)).to.equal(1);
 
     expect(
-      await nft.getApprovedForSeller(seller.address, marketAddress, 1)
+      await fungible.getApprovedForSeller(seller.address, marketAddress, 1)
     ).to.equal(9);
-    await nft.connect(buyer1).approve(marketAddress, 1, 1);
+    await fungible.connect(buyer1).approve(marketAddress, 1, 1);
     expect(
-      await nft.getApprovedForSeller(buyer1.address, marketAddress, 1)
+      await fungible.getApprovedForSeller(buyer1.address, marketAddress, 1)
     ).to.equal(1);
 
     // Relist item for sale
     await market
       .connect(seller)
-      .createMarketItem(nftContractAddress, 1, auctionPrice2, 2, emptyData, {
-        value: listingPrice,
-      });
+      .createMarketItem(
+        fungibleContractAddress,
+        1,
+        auctionPrice2,
+        2,
+        emptyData,
+        {
+          value: listingPrice,
+        }
+      );
 
     // Create 2nd sale with insufficient funds
     const insufficientOffer = ethers.utils.parseUnits("200", "ether");
@@ -360,7 +400,7 @@ describe("Market", function () {
       .connect(buyer2)
       .createMarketSale(2, 2, emptyData, { value: sufficientOffer });
 
-    expect(await nft.balanceOf(buyer2.address, 1)).to.equal(2);
+    expect(await fungible.balanceOf(buyer2.address, 1)).to.equal(2);
 
     // Check final details of tokens
     const item1 = await market.fetchMarketItem(1);

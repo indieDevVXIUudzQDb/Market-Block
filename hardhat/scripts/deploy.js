@@ -8,23 +8,21 @@ const fs = require("fs");
 const { ethers } = require("hardhat");
 
 async function main() {
-  const NFTMarket = await hre.ethers.getContractFactory("Market");
-  const nftMarket = await NFTMarket.deploy(
-    ethers.utils.parseUnits("1", "ether")
-  );
+  const Market = await hre.ethers.getContractFactory("Market");
+  const nftMarket = await Market.deploy(ethers.utils.parseUnits("1", "ether"));
   await nftMarket.deployed();
   console.log("nftMarket deployed to:", nftMarket.address);
 
-  const NFT = await hre.ethers.getContractFactory("NFT");
-  const nft = await NFT.deploy(nftMarket.address);
-  await nft.deployed();
-  console.log("nft deployed to:", nft.address);
+  const Fungible = await hre.ethers.getContractFactory("Fungible");
+  const fungible = await Fungible.deploy(nftMarket.address);
+  await fungible.deployed();
+  console.log("fungible deployed to:", fungible.address);
 
   try {
     fs.writeFileSync(
       "../server/utils/constants/contracts.ts",
       `/* Auto generated from hardhat/deploy.js */
-export const nftAddress = "${nft.address}"
+export const fungibleAddress = "${fungible.address}"
 export const marketAddress = "${nftMarket.address}"
 `
     );

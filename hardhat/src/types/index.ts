@@ -20,7 +20,7 @@ export type { ERC165 } from "./@openzeppelin/contracts/utils/introspection/ERC16
 export { ERC165__factory } from "./factories/@openzeppelin/contracts/utils/introspection/ERC165__factory";
 export type { IERC165 } from "./@openzeppelin/contracts/utils/introspection/IERC165";
 export { IERC165__factory } from "./factories/@openzeppelin/contracts/utils/introspection/IERC165__factory";
+export type { Fungible } from "./contracts/Fungible";
+export { Fungible__factory } from "./factories/contracts/Fungible__factory";
 export type { Market } from "./contracts/Market";
 export { Market__factory } from "./factories/contracts/Market__factory";
-export type { NFT } from "./contracts/NFT";
-export { NFT__factory } from "./factories/contracts/NFT__factory";

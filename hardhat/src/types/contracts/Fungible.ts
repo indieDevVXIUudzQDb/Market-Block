@@ -12,235 +12,238 @@ import type {
   PopulatedTransaction,
   Signer,
   utils,
-} from 'ethers'
+} from "ethers";
 import type {
   FunctionFragment,
   Result,
   EventFragment,
-} from '@ethersproject/abi'
-import type { Listener, Provider } from '@ethersproject/providers'
+} from "@ethersproject/abi";
+import type { Listener, Provider } from "@ethersproject/providers";
 import type {
   TypedEventFilter,
   TypedEvent,
   TypedListener,
   OnEvent,
-} from '../common'
+} from "../common";
 
-export interface NFTInterface extends utils.Interface {
+export interface FungibleInterface extends utils.Interface {
   functions: {
-    'approve(address,uint256,uint256)': FunctionFragment
-    'balanceOf(address,uint256)': FunctionFragment
-    'balanceOfBatch(address[],uint256[])': FunctionFragment
-    'createToken(string,uint256,bytes)': FunctionFragment
-    'getApprovedForSeller(address,address,uint256)': FunctionFragment
-    'isApprovedForAll(address,address)': FunctionFragment
-    'safeBatchTransferFrom(address,address,uint256[],uint256[],bytes)': FunctionFragment
-    'safeTransferFrom(address,address,address,uint256,uint256,bytes)': FunctionFragment
-    'safeTransferFrom(address,address,uint256,uint256,bytes)': FunctionFragment
-    'setApprovalForAll(address,bool)': FunctionFragment
-    'supportsInterface(bytes4)': FunctionFragment
-    'uri(uint256)': FunctionFragment
-  }
+    "approve(address,uint256,uint256)": FunctionFragment;
+    "balanceOf(address,uint256)": FunctionFragment;
+    "balanceOfBatch(address[],uint256[])": FunctionFragment;
+    "createToken(string,uint256,bytes)": FunctionFragment;
+    "getApprovedForSeller(address,address,uint256)": FunctionFragment;
+    "isApprovedForAll(address,address)": FunctionFragment;
+    "safeBatchTransferFrom(address,address,uint256[],uint256[],bytes)": FunctionFragment;
+    "safeTransferFrom(address,address,address,uint256,uint256,bytes)": FunctionFragment;
+    "safeTransferFrom(address,address,uint256,uint256,bytes)": FunctionFragment;
+    "setApprovalForAll(address,bool)": FunctionFragment;
+    "supportsInterface(bytes4)": FunctionFragment;
+    "uri(uint256)": FunctionFragment;
+  };
 
   getFunction(
     nameOrSignatureOrTopic:
-      | 'approve'
-      | 'balanceOf'
-      | 'balanceOfBatch'
-      | 'createToken'
-      | 'getApprovedForSeller'
-      | 'isApprovedForAll'
-      | 'safeBatchTransferFrom'
-      | 'safeTransferFrom(address,address,address,uint256,uint256,bytes)'
-      | 'safeTransferFrom(address,address,uint256,uint256,bytes)'
-      | 'setApprovalForAll'
-      | 'supportsInterface'
-      | 'uri'
-  ): FunctionFragment
+      | "approve"
+      | "balanceOf"
+      | "balanceOfBatch"
+      | "createToken"
+      | "getApprovedForSeller"
+      | "isApprovedForAll"
+      | "safeBatchTransferFrom"
+      | "safeTransferFrom(address,address,address,uint256,uint256,bytes)"
+      | "safeTransferFrom(address,address,uint256,uint256,bytes)"
+      | "setApprovalForAll"
+      | "supportsInterface"
+      | "uri"
+  ): FunctionFragment;
 
   encodeFunctionData(
-    functionFragment: 'approve',
+    functionFragment: "approve",
     values: [string, BigNumberish, BigNumberish]
-  ): string
+  ): string;
   encodeFunctionData(
-    functionFragment: 'balanceOf',
+    functionFragment: "balanceOf",
     values: [string, BigNumberish]
-  ): string
+  ): string;
   encodeFunctionData(
-    functionFragment: 'balanceOfBatch',
+    functionFragment: "balanceOfBatch",
     values: [string[], BigNumberish[]]
-  ): string
+  ): string;
   encodeFunctionData(
-    functionFragment: 'createToken',
+    functionFragment: "createToken",
     values: [string, BigNumberish, BytesLike]
-  ): string
+  ): string;
   encodeFunctionData(
-    functionFragment: 'getApprovedForSeller',
+    functionFragment: "getApprovedForSeller",
     values: [string, string, BigNumberish]
-  ): string
+  ): string;
   encodeFunctionData(
-    functionFragment: 'isApprovedForAll',
+    functionFragment: "isApprovedForAll",
     values: [string, string]
-  ): string
+  ): string;
   encodeFunctionData(
-    functionFragment: 'safeBatchTransferFrom',
+    functionFragment: "safeBatchTransferFrom",
     values: [string, string, BigNumberish[], BigNumberish[], BytesLike]
-  ): string
+  ): string;
   encodeFunctionData(
-    functionFragment: 'safeTransferFrom(address,address,address,uint256,uint256,bytes)',
+    functionFragment: "safeTransferFrom(address,address,address,uint256,uint256,bytes)",
     values: [string, string, string, BigNumberish, BigNumberish, BytesLike]
-  ): string
+  ): string;
   encodeFunctionData(
-    functionFragment: 'safeTransferFrom(address,address,uint256,uint256,bytes)',
+    functionFragment: "safeTransferFrom(address,address,uint256,uint256,bytes)",
     values: [string, string, BigNumberish, BigNumberish, BytesLike]
-  ): string
+  ): string;
   encodeFunctionData(
-    functionFragment: 'setApprovalForAll',
+    functionFragment: "setApprovalForAll",
     values: [string, boolean]
-  ): string
+  ): string;
   encodeFunctionData(
-    functionFragment: 'supportsInterface',
+    functionFragment: "supportsInterface",
     values: [BytesLike]
-  ): string
-  encodeFunctionData(functionFragment: 'uri', values: [BigNumberish]): string
+  ): string;
+  encodeFunctionData(functionFragment: "uri", values: [BigNumberish]): string;
 
-  decodeFunctionResult(functionFragment: 'approve', data: BytesLike): Result
-  decodeFunctionResult(functionFragment: 'balanceOf', data: BytesLike): Result
+  decodeFunctionResult(functionFragment: "approve", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: 'balanceOfBatch',
+    functionFragment: "balanceOfBatch",
     data: BytesLike
-  ): Result
-  decodeFunctionResult(functionFragment: 'createToken', data: BytesLike): Result
+  ): Result;
   decodeFunctionResult(
-    functionFragment: 'getApprovedForSeller',
+    functionFragment: "createToken",
     data: BytesLike
-  ): Result
+  ): Result;
   decodeFunctionResult(
-    functionFragment: 'isApprovedForAll',
+    functionFragment: "getApprovedForSeller",
     data: BytesLike
-  ): Result
+  ): Result;
   decodeFunctionResult(
-    functionFragment: 'safeBatchTransferFrom',
+    functionFragment: "isApprovedForAll",
     data: BytesLike
-  ): Result
+  ): Result;
   decodeFunctionResult(
-    functionFragment: 'safeTransferFrom(address,address,address,uint256,uint256,bytes)',
+    functionFragment: "safeBatchTransferFrom",
     data: BytesLike
-  ): Result
+  ): Result;
   decodeFunctionResult(
-    functionFragment: 'safeTransferFrom(address,address,uint256,uint256,bytes)',
+    functionFragment: "safeTransferFrom(address,address,address,uint256,uint256,bytes)",
     data: BytesLike
-  ): Result
+  ): Result;
   decodeFunctionResult(
-    functionFragment: 'setApprovalForAll',
+    functionFragment: "safeTransferFrom(address,address,uint256,uint256,bytes)",
     data: BytesLike
-  ): Result
+  ): Result;
   decodeFunctionResult(
-    functionFragment: 'supportsInterface',
+    functionFragment: "setApprovalForAll",
     data: BytesLike
-  ): Result
-  decodeFunctionResult(functionFragment: 'uri', data: BytesLike): Result
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "supportsInterface",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "uri", data: BytesLike): Result;
 
   events: {
-    'Approval(address,uint256,uint256)': EventFragment
-    'ApprovalForAll(address,address,bool)': EventFragment
-    'TransferBatch(address,address,address,uint256[],uint256[])': EventFragment
-    'TransferSingle(address,address,address,uint256,uint256)': EventFragment
-    'URI(string,uint256)': EventFragment
-  }
+    "Approval(address,uint256,uint256)": EventFragment;
+    "ApprovalForAll(address,address,bool)": EventFragment;
+    "TransferBatch(address,address,address,uint256[],uint256[])": EventFragment;
+    "TransferSingle(address,address,address,uint256,uint256)": EventFragment;
+    "URI(string,uint256)": EventFragment;
+  };
 
-  getEvent(nameOrSignatureOrTopic: 'Approval'): EventFragment
-  getEvent(nameOrSignatureOrTopic: 'ApprovalForAll'): EventFragment
-  getEvent(nameOrSignatureOrTopic: 'TransferBatch'): EventFragment
-  getEvent(nameOrSignatureOrTopic: 'TransferSingle'): EventFragment
-  getEvent(nameOrSignatureOrTopic: 'URI'): EventFragment
+  getEvent(nameOrSignatureOrTopic: "Approval"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "ApprovalForAll"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "TransferBatch"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "TransferSingle"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "URI"): EventFragment;
 }
 
 export interface ApprovalEventObject {
-  approved: string
-  tokenId: BigNumber
-  amount: BigNumber
+  approved: string;
+  tokenId: BigNumber;
+  amount: BigNumber;
 }
 export type ApprovalEvent = TypedEvent<
   [string, BigNumber, BigNumber],
   ApprovalEventObject
->
+>;
 
-export type ApprovalEventFilter = TypedEventFilter<ApprovalEvent>
+export type ApprovalEventFilter = TypedEventFilter<ApprovalEvent>;
 
 export interface ApprovalForAllEventObject {
-  account: string
-  operator: string
-  approved: boolean
+  account: string;
+  operator: string;
+  approved: boolean;
 }
 export type ApprovalForAllEvent = TypedEvent<
   [string, string, boolean],
   ApprovalForAllEventObject
->
+>;
 
-export type ApprovalForAllEventFilter = TypedEventFilter<ApprovalForAllEvent>
+export type ApprovalForAllEventFilter = TypedEventFilter<ApprovalForAllEvent>;
 
 export interface TransferBatchEventObject {
-  operator: string
-  from: string
-  to: string
-  ids: BigNumber[]
-  values: BigNumber[]
+  operator: string;
+  from: string;
+  to: string;
+  ids: BigNumber[];
+  values: BigNumber[];
 }
 export type TransferBatchEvent = TypedEvent<
   [string, string, string, BigNumber[], BigNumber[]],
   TransferBatchEventObject
->
+>;
 
-export type TransferBatchEventFilter = TypedEventFilter<TransferBatchEvent>
+export type TransferBatchEventFilter = TypedEventFilter<TransferBatchEvent>;
 
 export interface TransferSingleEventObject {
-  operator: string
-  from: string
-  to: string
-  id: BigNumber
-  value: BigNumber
+  operator: string;
+  from: string;
+  to: string;
+  id: BigNumber;
+  value: BigNumber;
 }
 export type TransferSingleEvent = TypedEvent<
   [string, string, string, BigNumber, BigNumber],
   TransferSingleEventObject
->
+>;
 
-export type TransferSingleEventFilter = TypedEventFilter<TransferSingleEvent>
+export type TransferSingleEventFilter = TypedEventFilter<TransferSingleEvent>;
 
 export interface URIEventObject {
-  value: string
-  id: BigNumber
+  value: string;
+  id: BigNumber;
 }
-export type URIEvent = TypedEvent<[string, BigNumber], URIEventObject>
+export type URIEvent = TypedEvent<[string, BigNumber], URIEventObject>;
 
-export type URIEventFilter = TypedEventFilter<URIEvent>
+export type URIEventFilter = TypedEventFilter<URIEvent>;
 
 export interface Fungible extends BaseContract {
-  connect(signerOrProvider: Signer | Provider | string): this
-  attach(addressOrName: string): this
-  deployed(): Promise<this>
+  connect(signerOrProvider: Signer | Provider | string): this;
+  attach(addressOrName: string): this;
+  deployed(): Promise<this>;
 
-  interface: NFTInterface
+  interface: FungibleInterface;
 
   queryFilter<TEvent extends TypedEvent>(
     event: TypedEventFilter<TEvent>,
     fromBlockOrBlockhash?: string | number | undefined,
     toBlock?: string | number | undefined
-  ): Promise<Array<TEvent>>
+  ): Promise<Array<TEvent>>;
 
   listeners<TEvent extends TypedEvent>(
     eventFilter?: TypedEventFilter<TEvent>
-  ): Array<TypedListener<TEvent>>
-  listeners(eventName?: string): Array<Listener>
+  ): Array<TypedListener<TEvent>>;
+  listeners(eventName?: string): Array<Listener>;
   removeAllListeners<TEvent extends TypedEvent>(
     eventFilter: TypedEventFilter<TEvent>
-  ): this
-  removeAllListeners(eventName?: string): this
-  off: OnEvent<this>
-  on: OnEvent<this>
-  once: OnEvent<this>
-  removeListener: OnEvent<this>
+  ): this;
+  removeAllListeners(eventName?: string): this;
+  off: OnEvent<this>;
+  on: OnEvent<this>;
+  once: OnEvent<this>;
+  removeListener: OnEvent<this>;
 
   functions: {
     approve(
@@ -248,39 +251,39 @@ export interface Fungible extends BaseContract {
       tokenId: BigNumberish,
       amount: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>
+    ): Promise<ContractTransaction>;
 
     balanceOf(
       account: string,
       id: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<[BigNumber]>
+    ): Promise<[BigNumber]>;
 
     balanceOfBatch(
       accounts: string[],
       ids: BigNumberish[],
       overrides?: CallOverrides
-    ): Promise<[BigNumber[]]>
+    ): Promise<[BigNumber[]]>;
 
     createToken(
       tokenURI: string,
       amount: BigNumberish,
       data: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>
+    ): Promise<ContractTransaction>;
 
     getApprovedForSeller(
       seller: string,
       operator: string,
       tokenId: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<[BigNumber]>
+    ): Promise<[BigNumber]>;
 
     isApprovedForAll(
       account: string,
       operator: string,
       overrides?: CallOverrides
-    ): Promise<[boolean]>
+    ): Promise<[boolean]>;
 
     safeBatchTransferFrom(
       from: string,
@@ -289,9 +292,9 @@ export interface Fungible extends BaseContract {
       amounts: BigNumberish[],
       data: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>
+    ): Promise<ContractTransaction>;
 
-    'safeTransferFrom(address,address,address,uint256,uint256,bytes)'(
+    "safeTransferFrom(address,address,address,uint256,uint256,bytes)"(
       seller: string,
       from: string,
       to: string,
@@ -299,69 +302,69 @@ export interface Fungible extends BaseContract {
       amount: BigNumberish,
       data: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>
+    ): Promise<ContractTransaction>;
 
-    'safeTransferFrom(address,address,uint256,uint256,bytes)'(
+    "safeTransferFrom(address,address,uint256,uint256,bytes)"(
       from: string,
       to: string,
       id: BigNumberish,
       amount: BigNumberish,
       data: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>
+    ): Promise<ContractTransaction>;
 
     setApprovalForAll(
       operator: string,
       approved: boolean,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>
+    ): Promise<ContractTransaction>;
 
     supportsInterface(
       interfaceId: BytesLike,
       overrides?: CallOverrides
-    ): Promise<[boolean]>
+    ): Promise<[boolean]>;
 
-    uri(tokenId: BigNumberish, overrides?: CallOverrides): Promise<[string]>
-  }
+    uri(tokenId: BigNumberish, overrides?: CallOverrides): Promise<[string]>;
+  };
 
   approve(
     operator: string,
     tokenId: BigNumberish,
     amount: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>
+  ): Promise<ContractTransaction>;
 
   balanceOf(
     account: string,
     id: BigNumberish,
     overrides?: CallOverrides
-  ): Promise<BigNumber>
+  ): Promise<BigNumber>;
 
   balanceOfBatch(
     accounts: string[],
     ids: BigNumberish[],
     overrides?: CallOverrides
-  ): Promise<BigNumber[]>
+  ): Promise<BigNumber[]>;
 
   createToken(
     tokenURI: string,
     amount: BigNumberish,
     data: BytesLike,
     overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>
+  ): Promise<ContractTransaction>;
 
   getApprovedForSeller(
     seller: string,
     operator: string,
     tokenId: BigNumberish,
     overrides?: CallOverrides
-  ): Promise<BigNumber>
+  ): Promise<BigNumber>;
 
   isApprovedForAll(
     account: string,
     operator: string,
     overrides?: CallOverrides
-  ): Promise<boolean>
+  ): Promise<boolean>;
 
   safeBatchTransferFrom(
     from: string,
@@ -370,9 +373,9 @@ export interface Fungible extends BaseContract {
     amounts: BigNumberish[],
     data: BytesLike,
     overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>
+  ): Promise<ContractTransaction>;
 
-  'safeTransferFrom(address,address,address,uint256,uint256,bytes)'(
+  "safeTransferFrom(address,address,address,uint256,uint256,bytes)"(
     seller: string,
     from: string,
     to: string,
@@ -380,29 +383,29 @@ export interface Fungible extends BaseContract {
     amount: BigNumberish,
     data: BytesLike,
     overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>
+  ): Promise<ContractTransaction>;
 
-  'safeTransferFrom(address,address,uint256,uint256,bytes)'(
+  "safeTransferFrom(address,address,uint256,uint256,bytes)"(
     from: string,
     to: string,
     id: BigNumberish,
     amount: BigNumberish,
     data: BytesLike,
     overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>
+  ): Promise<ContractTransaction>;
 
   setApprovalForAll(
     operator: string,
     approved: boolean,
     overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>
+  ): Promise<ContractTransaction>;
 
   supportsInterface(
     interfaceId: BytesLike,
     overrides?: CallOverrides
-  ): Promise<boolean>
+  ): Promise<boolean>;
 
-  uri(tokenId: BigNumberish, overrides?: CallOverrides): Promise<string>
+  uri(tokenId: BigNumberish, overrides?: CallOverrides): Promise<string>;
 
   callStatic: {
     approve(
@@ -410,39 +413,39 @@ export interface Fungible extends BaseContract {
       tokenId: BigNumberish,
       amount: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<void>
+    ): Promise<void>;
 
     balanceOf(
       account: string,
       id: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<BigNumber>
+    ): Promise<BigNumber>;
 
     balanceOfBatch(
       accounts: string[],
       ids: BigNumberish[],
       overrides?: CallOverrides
-    ): Promise<BigNumber[]>
+    ): Promise<BigNumber[]>;
 
     createToken(
       tokenURI: string,
       amount: BigNumberish,
       data: BytesLike,
       overrides?: CallOverrides
-    ): Promise<BigNumber>
+    ): Promise<BigNumber>;
 
     getApprovedForSeller(
       seller: string,
       operator: string,
       tokenId: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<BigNumber>
+    ): Promise<BigNumber>;
 
     isApprovedForAll(
       account: string,
       operator: string,
       overrides?: CallOverrides
-    ): Promise<boolean>
+    ): Promise<boolean>;
 
     safeBatchTransferFrom(
       from: string,
@@ -451,9 +454,9 @@ export interface Fungible extends BaseContract {
       amounts: BigNumberish[],
       data: BytesLike,
       overrides?: CallOverrides
-    ): Promise<void>
+    ): Promise<void>;
 
-    'safeTransferFrom(address,address,address,uint256,uint256,bytes)'(
+    "safeTransferFrom(address,address,address,uint256,uint256,bytes)"(
       seller: string,
       from: string,
       to: string,
@@ -461,90 +464,90 @@ export interface Fungible extends BaseContract {
       amount: BigNumberish,
       data: BytesLike,
       overrides?: CallOverrides
-    ): Promise<void>
+    ): Promise<void>;
 
-    'safeTransferFrom(address,address,uint256,uint256,bytes)'(
+    "safeTransferFrom(address,address,uint256,uint256,bytes)"(
       from: string,
       to: string,
       id: BigNumberish,
       amount: BigNumberish,
       data: BytesLike,
       overrides?: CallOverrides
-    ): Promise<void>
+    ): Promise<void>;
 
     setApprovalForAll(
       operator: string,
       approved: boolean,
       overrides?: CallOverrides
-    ): Promise<void>
+    ): Promise<void>;
 
     supportsInterface(
       interfaceId: BytesLike,
       overrides?: CallOverrides
-    ): Promise<boolean>
+    ): Promise<boolean>;
 
-    uri(tokenId: BigNumberish, overrides?: CallOverrides): Promise<string>
-  }
+    uri(tokenId: BigNumberish, overrides?: CallOverrides): Promise<string>;
+  };
 
   filters: {
-    'Approval(address,uint256,uint256)'(
+    "Approval(address,uint256,uint256)"(
       approved?: string | null,
       tokenId?: BigNumberish | null,
       amount?: BigNumberish | null
-    ): ApprovalEventFilter
+    ): ApprovalEventFilter;
     Approval(
       approved?: string | null,
       tokenId?: BigNumberish | null,
       amount?: BigNumberish | null
-    ): ApprovalEventFilter
+    ): ApprovalEventFilter;
 
-    'ApprovalForAll(address,address,bool)'(
+    "ApprovalForAll(address,address,bool)"(
       account?: string | null,
       operator?: string | null,
       approved?: null
-    ): ApprovalForAllEventFilter
+    ): ApprovalForAllEventFilter;
     ApprovalForAll(
       account?: string | null,
       operator?: string | null,
       approved?: null
-    ): ApprovalForAllEventFilter
+    ): ApprovalForAllEventFilter;
 
-    'TransferBatch(address,address,address,uint256[],uint256[])'(
+    "TransferBatch(address,address,address,uint256[],uint256[])"(
       operator?: string | null,
       from?: string | null,
       to?: string | null,
       ids?: null,
       values?: null
-    ): TransferBatchEventFilter
+    ): TransferBatchEventFilter;
     TransferBatch(
       operator?: string | null,
       from?: string | null,
       to?: string | null,
       ids?: null,
       values?: null
-    ): TransferBatchEventFilter
+    ): TransferBatchEventFilter;
 
-    'TransferSingle(address,address,address,uint256,uint256)'(
+    "TransferSingle(address,address,address,uint256,uint256)"(
       operator?: string | null,
       from?: string | null,
       to?: string | null,
       id?: null,
       value?: null
-    ): TransferSingleEventFilter
+    ): TransferSingleEventFilter;
     TransferSingle(
       operator?: string | null,
       from?: string | null,
       to?: string | null,
       id?: null,
       value?: null
-    ): TransferSingleEventFilter
+    ): TransferSingleEventFilter;
 
-    'URI(string,uint256)'(
+    "URI(string,uint256)"(
       value?: null,
       id?: BigNumberish | null
-    ): URIEventFilter
-    URI(value?: null, id?: BigNumberish | null): URIEventFilter
-  }
+    ): URIEventFilter;
+    URI(value?: null, id?: BigNumberish | null): URIEventFilter;
+  };
 
   estimateGas: {
     approve(
@@ -552,39 +555,39 @@ export interface Fungible extends BaseContract {
       tokenId: BigNumberish,
       amount: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>
+    ): Promise<BigNumber>;
 
     balanceOf(
       account: string,
       id: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<BigNumber>
+    ): Promise<BigNumber>;
 
     balanceOfBatch(
       accounts: string[],
       ids: BigNumberish[],
       overrides?: CallOverrides
-    ): Promise<BigNumber>
+    ): Promise<BigNumber>;
 
     createToken(
       tokenURI: string,
       amount: BigNumberish,
       data: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>
+    ): Promise<BigNumber>;
 
     getApprovedForSeller(
       seller: string,
       operator: string,
       tokenId: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<BigNumber>
+    ): Promise<BigNumber>;
 
     isApprovedForAll(
       account: string,
       operator: string,
       overrides?: CallOverrides
-    ): Promise<BigNumber>
+    ): Promise<BigNumber>;
 
     safeBatchTransferFrom(
       from: string,
@@ -593,9 +596,9 @@ export interface Fungible extends BaseContract {
       amounts: BigNumberish[],
       data: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>
+    ): Promise<BigNumber>;
 
-    'safeTransferFrom(address,address,address,uint256,uint256,bytes)'(
+    "safeTransferFrom(address,address,address,uint256,uint256,bytes)"(
       seller: string,
       from: string,
       to: string,
@@ -603,30 +606,30 @@ export interface Fungible extends BaseContract {
       amount: BigNumberish,
       data: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>
+    ): Promise<BigNumber>;
 
-    'safeTransferFrom(address,address,uint256,uint256,bytes)'(
+    "safeTransferFrom(address,address,uint256,uint256,bytes)"(
       from: string,
       to: string,
       id: BigNumberish,
       amount: BigNumberish,
       data: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>
+    ): Promise<BigNumber>;
 
     setApprovalForAll(
       operator: string,
       approved: boolean,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>
+    ): Promise<BigNumber>;
 
     supportsInterface(
       interfaceId: BytesLike,
       overrides?: CallOverrides
-    ): Promise<BigNumber>
+    ): Promise<BigNumber>;
 
-    uri(tokenId: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>
-  }
+    uri(tokenId: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
+  };
 
   populateTransaction: {
     approve(
@@ -634,39 +637,39 @@ export interface Fungible extends BaseContract {
       tokenId: BigNumberish,
       amount: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>
+    ): Promise<PopulatedTransaction>;
 
     balanceOf(
       account: string,
       id: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>
+    ): Promise<PopulatedTransaction>;
 
     balanceOfBatch(
       accounts: string[],
       ids: BigNumberish[],
       overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>
+    ): Promise<PopulatedTransaction>;
 
     createToken(
       tokenURI: string,
       amount: BigNumberish,
       data: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>
+    ): Promise<PopulatedTransaction>;
 
     getApprovedForSeller(
       seller: string,
       operator: string,
       tokenId: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>
+    ): Promise<PopulatedTransaction>;
 
     isApprovedForAll(
       account: string,
       operator: string,
       overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>
+    ): Promise<PopulatedTransaction>;
 
     safeBatchTransferFrom(
       from: string,
@@ -675,9 +678,9 @@ export interface Fungible extends BaseContract {
       amounts: BigNumberish[],
       data: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>
+    ): Promise<PopulatedTransaction>;
 
-    'safeTransferFrom(address,address,address,uint256,uint256,bytes)'(
+    "safeTransferFrom(address,address,address,uint256,uint256,bytes)"(
       seller: string,
       from: string,
       to: string,
@@ -685,31 +688,31 @@ export interface Fungible extends BaseContract {
       amount: BigNumberish,
       data: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>
+    ): Promise<PopulatedTransaction>;
 
-    'safeTransferFrom(address,address,uint256,uint256,bytes)'(
+    "safeTransferFrom(address,address,uint256,uint256,bytes)"(
       from: string,
       to: string,
       id: BigNumberish,
       amount: BigNumberish,
       data: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>
+    ): Promise<PopulatedTransaction>;
 
     setApprovalForAll(
       operator: string,
       approved: boolean,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>
+    ): Promise<PopulatedTransaction>;
 
     supportsInterface(
       interfaceId: BytesLike,
       overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>
+    ): Promise<PopulatedTransaction>;
 
     uri(
       tokenId: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>
-  }
+    ): Promise<PopulatedTransaction>;
+  };
 }

@@ -30,7 +30,7 @@ import type {
 export declare namespace Market {
   export type MarketItemStruct = {
     itemId: BigNumberish;
-    nftContract: string;
+    fungibleContract: string;
     tokenId: BigNumberish;
     seller: string;
     owner: string;
@@ -48,7 +48,7 @@ export declare namespace Market {
     BigNumber
   ] & {
     itemId: BigNumber;
-    nftContract: string;
+    fungibleContract: string;
     tokenId: BigNumber;
     seller: string;
     owner: string;
@@ -218,7 +218,7 @@ export interface MarketInterface extends utils.Interface {
 
 export interface MarketItemCreatedEventObject {
   itemId: BigNumber;
-  nftContract: string;
+  fungibleContract: string;
   tokenId: BigNumber;
   seller: string;
   owner: string;
@@ -280,7 +280,7 @@ export interface Market extends BaseContract {
     ): Promise<ContractTransaction>;
 
     createMarketItem(
-      nftContract: string,
+      fungibleContract: string,
       tokenId: BigNumberish,
       price: BigNumberish,
       amount: BigNumberish,
@@ -361,7 +361,7 @@ export interface Market extends BaseContract {
   ): Promise<ContractTransaction>;
 
   createMarketItem(
-    nftContract: string,
+    fungibleContract: string,
     tokenId: BigNumberish,
     price: BigNumberish,
     amount: BigNumberish,
@@ -442,7 +442,7 @@ export interface Market extends BaseContract {
     ): Promise<void>;
 
     createMarketItem(
-      nftContract: string,
+      fungibleContract: string,
       tokenId: BigNumberish,
       price: BigNumberish,
       amount: BigNumberish,
@@ -518,7 +518,7 @@ export interface Market extends BaseContract {
   filters: {
     "MarketItemCreated(uint256,address,uint256,address,address,uint256,uint256)"(
       itemId?: BigNumberish | null,
-      nftContract?: string | null,
+      fungibleContract?: string | null,
       tokenId?: null,
       seller?: null,
       owner?: null,
@@ -527,7 +527,7 @@ export interface Market extends BaseContract {
     ): MarketItemCreatedEventFilter;
     MarketItemCreated(
       itemId?: BigNumberish | null,
-      nftContract?: string | null,
+      fungibleContract?: string | null,
       tokenId?: null,
       seller?: null,
       owner?: null,
@@ -554,7 +554,7 @@ export interface Market extends BaseContract {
     ): Promise<BigNumber>;
 
     createMarketItem(
-      nftContract: string,
+      fungibleContract: string,
       tokenId: BigNumberish,
       price: BigNumberish,
       amount: BigNumberish,
@@ -630,7 +630,7 @@ export interface Market extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     createMarketItem(
-      nftContract: string,
+      fungibleContract: string,
       tokenId: BigNumberish,
       price: BigNumberish,
       amount: BigNumberish,

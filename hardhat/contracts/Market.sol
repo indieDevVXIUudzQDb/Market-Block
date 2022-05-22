@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "./NFT.sol";
+import "./Fungible.sol";
 
 import "hardhat/console.sol";
 
@@ -23,7 +23,7 @@ contract Market is IERC1155Receiver, ReentrancyGuard {
 
     struct MarketItem {
         uint itemId;
-        address nftContract;
+        address fungibleContract;
         uint256 tokenId;
         address payable seller;
         address payable owner;
@@ -33,7 +33,7 @@ contract Market is IERC1155Receiver, ReentrancyGuard {
 
     event MarketItemCreated (
         uint indexed itemId,
-        address indexed nftContract,
+        address indexed fungibleContract,
         uint256 tokenId,
         address seller,
         address owner,
@@ -87,14 +87,14 @@ contract Market is IERC1155Receiver, ReentrancyGuard {
 
 
     function createMarketItem(
-        address nftContract,
+        address fungibleContract,
         uint256 tokenId,
         uint256 price,
         uint256 amount,
         bytes memory data
     ) public payable nonReentrant {
-        console.log("Creating Market Item:", nftContract, tokenId, price);
-        bool supported = IERC1155(nftContract).supportsInterface(type(IERC1155).interfaceId);
+        console.log("Creating Market Item:", fungibleContract, tokenId, price);
+        bool supported = IERC1155(fungibleContract).supportsInterface(type(IERC1155).interfaceId);
         require(supported == true);
         require(price > 0, "Price must be at least 1 wei");
         require(msg.value == listingPrice, "Price must be equal to listing price");
@@ -104,16 +104,16 @@ contract Market is IERC1155Receiver, ReentrancyGuard {
 
         idToMarketItem[itemId] = MarketItem(
             itemId,
-            nftContract,
+            fungibleContract,
             tokenId,
             payable(msg.sender),
             payable(address(0)),
             price,
             amount
         );
-        NFT(nftContract).safeTransferFrom(msg.sender, msg.sender, address(this), tokenId, amount, data);
+        Fungible(fungibleContract).safeTransferFrom(msg.sender, msg.sender, address(this), tokenId, amount, data);
 
-        emit MarketItemCreated(itemId, nftContract, tokenId, msg.sender, address(0), price, amount);
+        emit MarketItemCreated(itemId, fungibleContract, tokenId, msg.sender, address(0), price, amount);
     }
 
     function createMarketSale(
@@ -126,8 +126,8 @@ contract Market is IERC1155Receiver, ReentrancyGuard {
         require(idToMarketItem[itemId].remainingAmount >= amount, "This item is not available");
         require(msg.value == price, "Please submit the asking price in order to complete the purchase");
         idToMarketItem[itemId].seller.transfer(msg.value);
-        address nftContract = idToMarketItem[itemId].nftContract;
-        NFT(nftContract).safeTransferFrom(idToMarketItem[itemId].seller,address(this), msg.sender, tokenId, amount, data);
+        address fungibleContract = idToMarketItem[itemId].fungibleContract;
+        Fungible(fungibleContract).safeTransferFrom(idToMarketItem[itemId].seller,address(this), msg.sender, tokenId, amount, data);
         idToMarketItem[itemId].owner = payable(msg.sender);
         idToMarketItem[itemId].remainingAmount -= amount;
         _itemsSold.increment();
@@ -141,8 +141,8 @@ contract Market is IERC1155Receiver, ReentrancyGuard {
         require(seller == msg.sender, "Only item seller can cancel a market listing.");
         require(idToMarketItem[itemId].remainingAmount >= amount, "This item is not available");
         uint256 tokenId = idToMarketItem[itemId].tokenId;
-        address nftContract = idToMarketItem[itemId].nftContract;
-        NFT(nftContract).safeTransferFrom(idToMarketItem[itemId].seller, address(this), idToMarketItem[itemId].seller, tokenId, amount, data);
+        address fungibleContract = idToMarketItem[itemId].fungibleContract;
+        Fungible(fungibleContract).safeTransferFrom(idToMarketItem[itemId].seller, address(this), idToMarketItem[itemId].seller, tokenId, amount, data);
         idToMarketItem[itemId].remainingAmount -= amount;
 
         emit MarketItemStatusChange(itemId, idToMarketItem[itemId].remainingAmount);

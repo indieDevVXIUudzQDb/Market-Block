@@ -1,14 +1,14 @@
 import { ethers } from 'ethers'
 import { rpcURL } from '../constants/config'
-import NFT from '../../artifacts/contracts/NFT.sol/NFT.json'
+import Fungible from '../../artifacts/contracts/Fungible.sol/Fungible.json'
 import Market from '../../artifacts/contracts/MARKET.sol/Market.json'
 import axios from 'axios'
 import Web3Modal from 'web3modal'
 import { JsonRpcSigner } from '@ethersproject/providers'
 import { Web3State } from '../../hooks/useWeb3State'
 import { DigitalItem, MarketItem } from '../../pages/item/[...slug]'
-import { marketAddress, nftAddress } from '../constants/contracts'
-import { Market as IMarket, NFT as INFT } from '../../types'
+import { marketAddress, fungibleAddress } from '../constants/contracts'
+import { Market as IMarket, Fungible as IFungible } from '../../types'
 
 export const activeSigner = async (web3State: Web3State) => {
   let signer: JsonRpcSigner
@@ -30,11 +30,11 @@ export const loadMarketItemUtil = async (
   web3State: Web3State
 ) => {
   const provider = new ethers.providers.JsonRpcProvider(rpcURL)
-  const tokenContract: INFT = new ethers.Contract(
+  const tokenContract: IFungible = new ethers.Contract(
     tokenAddress,
-    NFT.abi,
+    Fungible.abi,
     provider
-  ) as INFT
+  ) as IFungible
   const marketContract: IMarket = new ethers.Contract(
     marketAddress,
     Market.abi,
@@ -191,7 +191,7 @@ export const sellItemUtil = async (
   const listPriceResult = await marketContract.getListingPrice()
   const listingPrice = listPriceResult.toString()
   const marketTransaction = await marketContract.createMarketItem(
-    nftAddress,
+    fungibleAddress,
     digitalItem.tokenId,
     price,
     amount,
@@ -251,11 +251,11 @@ export const approveMarketSaleUtil = async (
   }
 
   //Create Market Item
-  const tokenContract: INFT = new ethers.Contract(
-    nftAddress,
-    NFT.abi,
+  const tokenContract: IFungible = new ethers.Contract(
+    fungibleAddress,
+    Fungible.abi,
     signer
-  ) as INFT
+  ) as IFungible
   const approveTransaction = await tokenContract.approve(
     marketAddress,
     digitalItem.tokenId,
@@ -272,12 +272,12 @@ export const createAssetUtil = async (
   baseApiUrl: string,
   amount: number
 ) => {
-  // Create NFT
-  const contract: INFT = new ethers.Contract(
-    nftAddress,
-    NFT.abi,
+  // Create Fungible
+  const contract: IFungible = new ethers.Contract(
+    fungibleAddress,
+    Fungible.abi,
     signer
-  ) as INFT
+  ) as IFungible
   const nftTransaction = await contract.createToken(
     ipfsURL,
     amount,
@@ -300,7 +300,7 @@ export const createAssetUtil = async (
     },
     body: JSON.stringify({
       tokenId,
-      tokenAddress: nftAddress,
+      tokenAddress: fungibleAddress,
     }),
   })
 
@@ -336,7 +336,7 @@ export const createMarketListingUtil = async (
   const listingPrice = listPriceResult.toString()
   // console.log({ tokenId, price, listingPrice, salePrice })
   const marketTransaction = await marketContract.createMarketItem(
-    nftAddress,
+    fungibleAddress,
     tokenId,
     price,
     amount,
