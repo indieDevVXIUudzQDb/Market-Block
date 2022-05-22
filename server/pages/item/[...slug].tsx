@@ -1,6 +1,7 @@
 import type { NextPage } from 'next'
 import {
   Anchor,
+  Box,
   Button,
   Card,
   Group,
@@ -40,6 +41,8 @@ export interface DigitalItem {
   amountApproved: number
   amountOwned: number
   amountOwnedListed: number
+  amountOwnedUnListed: number
+  amountReadyForListing: number
   marketItems: MarketItem[]
 }
 
@@ -191,130 +194,137 @@ const ItemDetail: NextPage = () => {
               ) : null}
             </>
           ) : null}
-          <Card
-            shadow="sm"
-            p="lg"
-            style={{
-              margin: '3em',
-              marginLeft: '3em',
-              minHeight: '90%',
+          <Box
+            sx={{
+              maxWidth: 1200,
             }}
+            mx="auto"
           >
-            <SimpleGrid cols={1}>
-              <Group position="center" style={{ marginBottom: 5 }}>
-                <Title align={'center'}>{item.name}</Title>
-              </Group>
-              <Card.Section>
-                <div style={{ textAlign: 'center' }}>
-                  <Image
-                    src={item.image}
-                    height={160}
-                    alt={item.name}
-                    fit="contain"
-                    withPlaceholder
-                    placeholder={
-                      <Image
-                        src={`${LOGO_URL}`}
-                        height={160}
-                        alt={'logo'}
-                        fit="contain"
-                      />
-                    }
-                  />
-                </div>
-              </Card.Section>
-              <Group position={'left'}>
-                <p>
-                  <b>Description: </b>
-                  <br />
-                  {item.description}
-                </p>
-              </Group>
-              <Group position={'left'}>
-                <p>
-                  <b>URL: </b>
-                  <br />
-                  <Anchor href={item.tokenUri} target="_blank">
-                    {item.tokenUri}
-                  </Anchor>
-                </p>
-              </Group>
-              <Group position={'left'} grow>
-                <b>Meta Data: </b>
-              </Group>
-              <Group position={'left'} grow>
-                <Prism language={'json'} color={'blue'}>
-                  {JSON.stringify(item.meta.data)}
-                </Prism>
-              </Group>
-              <Group position={'left'}>
-                <p>
-                  <b>Quantiy Owned: </b>
-                  <br />
-                  {item.amountOwned}
-                </p>
-              </Group>
-              {!web3State.connected ? (
-                <Group position={'left'} grow>
-                  <Button color={'gray'}>Wallet not connected</Button>
-                  <div />
+            <Card
+              shadow="sm"
+              p="lg"
+              style={{
+                margin: '3em',
+                marginLeft: '3em',
+                minHeight: '90%',
+              }}
+            >
+              <SimpleGrid cols={1}>
+                <Group position="center" style={{ marginBottom: 5 }}>
+                  <Title align={'center'}>{item.name}</Title>
                 </Group>
-              ) : null}
+                <Card.Section>
+                  <div style={{ textAlign: 'center' }}>
+                    <Image
+                      src={item.image}
+                      height={160}
+                      alt={item.name}
+                      fit="contain"
+                      withPlaceholder
+                      placeholder={
+                        <Image
+                          src={`${LOGO_URL}`}
+                          height={160}
+                          alt={'logo'}
+                          fit="contain"
+                        />
+                      }
+                    />
+                  </div>
+                </Card.Section>
+                <Group position={'left'}>
+                  <p>
+                    <b>Description: </b>
+                    <br />
+                    {item.description}
+                  </p>
+                </Group>
+                <Group position={'left'}>
+                  <p>
+                    <b>URL: </b>
+                    <br />
+                    <Anchor href={item.tokenUri} target="_blank">
+                      {item.tokenUri}
+                    </Anchor>
+                  </p>
+                </Group>
+                <Group position={'left'} grow>
+                  <b>Meta Data: </b>
+                </Group>
+                <Group position={'left'} grow>
+                  <Prism language={'json'} color={'blue'}>
+                    {JSON.stringify(item.meta.data)}
+                  </Prism>
+                </Group>
+                <Group position={'left'}>
+                  <p>
+                    <b>Quantiy Owned: </b>
+                    <br />
+                    {item.amountOwned}
+                  </p>
+                </Group>
+                {!web3State.connected ? (
+                  <Group position={'left'} grow>
+                    <Button color={'gray'}>Wallet not connected</Button>
+                    <div />
+                  </Group>
+                ) : null}
 
-              {item &&
-              item.amountOwned &&
-              item.amountApproved - item.amountOwnedListed > 0 ? (
-                <Group position={'left'} grow>
-                  <Button
-                    onClick={() => {
-                      setSellOpened(true)
-                    }}
-                  >
-                    List for Sale (x
-                    {item.amountApproved - item.amountOwnedListed})
-                  </Button>
-                  <div />
-                </Group>
-              ) : null}
-              {item &&
-              item.amountOwned - item.amountOwnedListed - item.amountApproved >
-                0 ? (
-                <Group position={'left'} grow>
-                  <Button
-                    color={'orange'}
-                    onClick={() => {
-                      setApproveOpened(true)
-                    }}
-                  >
-                    Approve for Sale (x
-                    {item.amountOwned -
-                      item.amountOwnedListed -
-                      item.amountApproved}
-                    )
-                  </Button>
-                  <div />
-                </Group>
-              ) : null}
+                {item && item.amountOwned && item.amountReadyForListing > 0 ? (
+                  <Group position={'left'} grow>
+                    <Button
+                      onClick={() => {
+                        setSellOpened(true)
+                      }}
+                    >
+                      List for Sale (x
+                      {item.amountReadyForListing})
+                    </Button>
+                    <div />
+                  </Group>
+                ) : null}
+                {item &&
+                item.amountOwned -
+                  item.amountOwnedListed -
+                  item.amountApproved >
+                  0 ? (
+                  <Group position={'left'} grow>
+                    <Button
+                      color={'orange'}
+                      onClick={() => {
+                        setApproveOpened(true)
+                      }}
+                    >
+                      Approve for Sale (x
+                      {item.amountOwned -
+                        item.amountOwnedListed -
+                        item.amountApproved}
+                      )
+                    </Button>
+                    <div />
+                  </Group>
+                ) : null}
 
-              <Table>
-                <thead>
-                  <tr>
-                    <th>Address</th>
-                    <th>Quantity</th>
-                    <th>Price</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <MarketItemRows
-                    marketItems={item.marketItems}
-                    setBuyOpened={setBuyOpened}
-                    setCancelListingOpened={setCancelListingOpened}
-                    setTargetMarketItem={setTargetMarketItem}
-                  />
-                </tbody>
-              </Table>
-            </SimpleGrid>
-          </Card>
+                <Table>
+                  <thead>
+                    <tr>
+                      <th>Address</th>
+                      <th>Quantity</th>
+                      <th>Price</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <MarketItemRows
+                      marketItems={item.marketItems}
+                      setBuyOpened={setBuyOpened}
+                      setCancelListingOpened={setCancelListingOpened}
+                      setTargetMarketItem={setTargetMarketItem}
+                    />
+                  </tbody>
+                </Table>
+              </SimpleGrid>
+            </Card>
+          </Box>
         </>
       ) : null}
     </Layout>

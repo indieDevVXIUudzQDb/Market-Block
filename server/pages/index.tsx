@@ -14,9 +14,7 @@ const Home: (props: {
   // @ts-ignore
   const { origin, baseApiUrl, nextPage: nextPage } = props
 
-  const [marketItems, setMarketItems] = useState<(DigitalItem | MarketItem)[]>(
-    []
-  )
+  const [marketItems, setMarketItems] = useState<DigitalItem[]>([])
   const [loading, setLoading] = useState<boolean>(false)
   const web3State: Web3State = useWeb3State()
   const theme = useMantineTheme()

@@ -395,14 +395,16 @@ const CreateItem: (props: { baseApiUrl: string }) => JSX.Element = (props: {
                 min={0}
                 {...form.getInputProps('price')}
               />
-              <TextInput
-                required
-                label={<b>{`Quantity to list for sale`}</b>}
-                type={'number'}
-                min={1}
-                max={amountRef.current?.value}
-                {...form.getInputProps('listAmount')}
-              />
+              {amountRef.current?.value ? (
+                <TextInput
+                  required
+                  label={<b>{`Quantity to list for sale`}</b>}
+                  type={'number'}
+                  min={1}
+                  max={amountRef.current?.value}
+                  {...form.getInputProps('listAmount')}
+                />
+              ) : null}
             </>
           ) : null}
           <Text className={'mt-5'}>

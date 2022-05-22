@@ -62,6 +62,8 @@ export const loadMarketItemUtil = async (
 
   let amountApproved = 0,
     amountOwnedListed = 0,
+    amountOwnedUnlisted = 0,
+    amountReadyForListing = 0,
     amountOwned = 0
   try {
     let balanceResult
@@ -107,6 +109,9 @@ export const loadMarketItemUtil = async (
     amountApproved = result.toNumber()
     console.log({ amountApproved })
   }
+  amountOwnedUnlisted = amountOwned - amountOwnedListed
+  amountReadyForListing =
+    amountOwnedUnlisted - (amountOwnedUnlisted - amountApproved)
   let digitalItem: DigitalItem = {
     tokenId,
     tokenAddress,
@@ -120,6 +125,8 @@ export const loadMarketItemUtil = async (
     marketItems,
     amountOwned,
     amountOwnedListed,
+    amountOwnedUnlisted,
+    amountReadyForListing,
   }
   console.log({ digitalItem })
   return digitalItem
