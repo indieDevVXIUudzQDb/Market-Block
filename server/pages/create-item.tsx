@@ -13,6 +13,7 @@ import {
   Space,
   Text,
   TextInput,
+  Title,
   useMantineTheme,
 } from '@mantine/core'
 import {
@@ -20,8 +21,10 @@ import {
   Files,
   Icon as TablerIcon,
   Photo,
+  ReportMoney,
   Trash,
   Upload,
+  WorldUpload,
   X,
 } from 'tabler-icons-react'
 import { Dropzone, DropzoneStatus, IMAGE_MIME_TYPE } from '@mantine/dropzone'
@@ -32,13 +35,14 @@ import { toast } from 'react-hot-toast'
 import { toastConfig } from '../utils/constants/toastConfig'
 import { readFileAsync } from '../utils/utils'
 import { useWeb3State, Web3State } from '../hooks/useWeb3State'
-import { CURRENCY_NAME } from '../utils/constants/constants'
+import { baseUrl, CURRENCY_NAME } from '../utils/constants/constants'
 import { absoluteUrl } from '../middleware/utils'
 import {
   activeSigner,
   createAssetUtil,
   createMarketListingUtil,
 } from '../utils/helpers/marketHelpers'
+import { nftAddress } from '../utils/constants/contracts'
 
 const client = ipfsHttpClient({ url: `${ipfsAPIURL}` })
 
@@ -62,6 +66,10 @@ const CreateItem: (props: { baseApiUrl: string }) => JSX.Element = (props: {
   const listItemCheckboxRef = useRef<HTMLInputElement>()
   const ipfsAwareCheckboxRef = useRef<HTMLInputElement>()
   const permissionAwareCheckboxRef = useRef<HTMLInputElement>()
+
+  const [uploadedLinks, setUploadedLinks] = useState<
+    { name: string; link: string }[]
+  >([])
 
   const form = useForm({
     initialValues: {
@@ -256,7 +264,13 @@ const CreateItem: (props: { baseApiUrl: string }) => JSX.Element = (props: {
 
       if (listForSale) {
         await createMarketListing(tokenId, (price || '0').toString(), amount)
+      } else {
+        resetPage()
       }
+      const links = uploadedLinks
+      // @ts-ignore
+      links.push({ name, link: `${baseUrl}/${nftAddress}/${tokenId}` })
+      setUploadedLinks(links)
     } catch (e) {
       // @ts-ignore
       if (e.message === 'Wallet not ready or not available') {
@@ -340,7 +354,7 @@ const CreateItem: (props: { baseApiUrl: string }) => JSX.Element = (props: {
           />
           <Group className={'pb-5'}>
             <Alert
-              icon={<AlertCircle size={16} />}
+              icon={<ReportMoney size={16} />}
               title="List for sale"
               color="green"
             >
@@ -442,7 +456,7 @@ const CreateItem: (props: { baseApiUrl: string }) => JSX.Element = (props: {
             ) : null}
           </Group>
           <Alert
-            icon={<AlertCircle size={16} />}
+            icon={<WorldUpload size={16} />}
             title="Upload to IPFS"
             color="blue"
             className={'mb-5'}
@@ -495,6 +509,16 @@ const CreateItem: (props: { baseApiUrl: string }) => JSX.Element = (props: {
               Create
             </Button>
           </Group>
+          <Box>
+            <Text>
+              <b>Created Assets</b>
+            </Text>
+            {uploadedLinks.length > 0
+              ? uploadedLinks.map((link, index) => (
+                  <Anchor href={link.link}>{link.name}</Anchor>
+                ))
+              : null}
+          </Box>
         </form>
         <Space />
       </Box>

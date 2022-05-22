@@ -40,20 +40,23 @@ export const loadMarketItemUtil = async (
     Market.abi,
     provider
   ) as IMarket
-  let marketData, meta, tokenUri
+  let marketRawItems, meta, tokenUri
   try {
     tokenUri = await tokenContract.uri(tokenId)
     meta = await axios.get(tokenUri)
-    // This a new item with no market history
-    marketData = await marketContract.fetchMarketItemByTokenId(tokenId)
-    const marketDataTokenId = marketData.tokenId.toNumber()
-    if (marketDataTokenId === 0) {
-      marketData = null
-    }
   } catch (e) {
     meta = {
       data: { image: null, name: null, description: null },
     }
+  }
+  try {
+    marketRawItems = await marketContract.fetchMarketItemsForTokenByStatus(
+      tokenId.toString(),
+      0
+    )
+    console.log({ marketRawItems })
+  } catch (e) {
+    console.error(e)
   }
 
   let amountApproved = 0,
@@ -69,8 +72,10 @@ export const loadMarketItemUtil = async (
   } catch (e) {
     console.error(e)
   }
+  const marketItems = []
 
-  if (marketData && marketData.status === 0) {
+  for (let i = 0; i < marketRawItems.length; i++) {
+    const marketData = marketRawItems[i]
     let price = ethers.utils.formatUnits(marketData.price.toString(), 'ether')
 
     const marketItem: MarketItem = {
@@ -90,29 +95,34 @@ export const loadMarketItemUtil = async (
       meta,
       available: marketData.status === 0,
     }
+    const isCurrentOwner =
+      marketItem.seller.toLowerCase() === web3State.address?.toLowerCase()
+    if (marketItem.available && isCurrentOwner) {
+      amountOwned += marketItem.amountListed
+    }
     console.log({ marketItem })
-    return marketItem
-  } else {
-    if (web3State.address) {
-      const result = await tokenContract.getApproved(marketAddress, tokenId)
-      amountApproved = result.toNumber()
-      console.log({ amountApproved })
-    }
-    let digitalItem: DigitalItem = {
-      tokenId,
-      tokenAddress,
-      image: meta.data.image as string,
-      name: meta.data.name as string,
-      description: meta.data.description as string,
-      // @ts-ignore
-      tokenUri,
-      amountApproved,
-      meta,
-      amountOwned,
-    }
-    console.log({ digitalItem })
-    return digitalItem
+    marketItems.push(marketItem)
   }
+  if (web3State.address) {
+    const result = await tokenContract.getApproved(marketAddress, tokenId)
+    amountApproved = result.toNumber()
+    console.log({ amountApproved })
+  }
+  let digitalItem: DigitalItem = {
+    tokenId,
+    tokenAddress,
+    image: meta.data.image as string,
+    name: meta.data.name as string,
+    description: meta.data.description as string,
+    // @ts-ignore
+    tokenUri,
+    amountApproved,
+    meta,
+    amountOwned,
+    marketItems,
+  }
+  console.log({ digitalItem })
+  return digitalItem
 }
 
 export const loadMarketItemsUtil = async (

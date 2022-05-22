@@ -40,6 +40,7 @@ export interface DigitalItem {
   amountApproved: number
   amountOwned: number
   amountListed: number
+  marketItems: MarketItem[]
 }
 
 export interface MarketItem extends DigitalItem {
