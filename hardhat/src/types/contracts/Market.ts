@@ -67,6 +67,7 @@ export interface MarketInterface extends utils.Interface {
     "fetchMarketItems()": FunctionFragment;
     "fetchMarketItemsByStatus(uint8)": FunctionFragment;
     "fetchMarketItemsCreated()": FunctionFragment;
+    "fetchMarketItemsForTokenByStatus(uint256,uint8)": FunctionFragment;
     "fetchMyMarketItems()": FunctionFragment;
     "getListingPrice()": FunctionFragment;
     "onERC1155BatchReceived(address,address,uint256[],uint256[],bytes)": FunctionFragment;
@@ -85,6 +86,7 @@ export interface MarketInterface extends utils.Interface {
       | "fetchMarketItems"
       | "fetchMarketItemsByStatus"
       | "fetchMarketItemsCreated"
+      | "fetchMarketItemsForTokenByStatus"
       | "fetchMyMarketItems"
       | "getListingPrice"
       | "onERC1155BatchReceived"
@@ -124,6 +126,10 @@ export interface MarketInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "fetchMarketItemsCreated",
     values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "fetchMarketItemsForTokenByStatus",
+    values: [BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "fetchMyMarketItems",
@@ -180,6 +186,10 @@ export interface MarketInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "fetchMarketItemsCreated",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "fetchMarketItemsForTokenByStatus",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -318,6 +328,12 @@ export interface Market extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[Market.MarketItemStructOutput[]]>;
 
+    fetchMarketItemsForTokenByStatus(
+      tokenId: BigNumberish,
+      status: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[Market.MarketItemStructOutput[]]>;
+
     fetchMyMarketItems(
       overrides?: CallOverrides
     ): Promise<[Market.MarketItemStructOutput[]]>;
@@ -399,6 +415,12 @@ export interface Market extends BaseContract {
     overrides?: CallOverrides
   ): Promise<Market.MarketItemStructOutput[]>;
 
+  fetchMarketItemsForTokenByStatus(
+    tokenId: BigNumberish,
+    status: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<Market.MarketItemStructOutput[]>;
+
   fetchMyMarketItems(
     overrides?: CallOverrides
   ): Promise<Market.MarketItemStructOutput[]>;
@@ -477,6 +499,12 @@ export interface Market extends BaseContract {
     ): Promise<Market.MarketItemStructOutput[]>;
 
     fetchMarketItemsCreated(
+      overrides?: CallOverrides
+    ): Promise<Market.MarketItemStructOutput[]>;
+
+    fetchMarketItemsForTokenByStatus(
+      tokenId: BigNumberish,
+      status: BigNumberish,
       overrides?: CallOverrides
     ): Promise<Market.MarketItemStructOutput[]>;
 
@@ -588,6 +616,12 @@ export interface Market extends BaseContract {
 
     fetchMarketItemsCreated(overrides?: CallOverrides): Promise<BigNumber>;
 
+    fetchMarketItemsForTokenByStatus(
+      tokenId: BigNumberish,
+      status: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     fetchMyMarketItems(overrides?: CallOverrides): Promise<BigNumber>;
 
     getListingPrice(overrides?: CallOverrides): Promise<BigNumber>;
@@ -663,6 +697,12 @@ export interface Market extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     fetchMarketItemsCreated(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    fetchMarketItemsForTokenByStatus(
+      tokenId: BigNumberish,
+      status: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 

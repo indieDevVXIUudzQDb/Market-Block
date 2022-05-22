@@ -108,13 +108,25 @@ describe("Market", function () {
     expect(itemResults.length).to.equal(1);
     expect(itemResults[0].tokenId.toString()).to.equal("3");
 
+    itemResults = await market.fetchMarketItemsForTokenByStatus(3, 0);
+    expect(itemResults.length).to.equal(1);
+    expect(itemResults[0].tokenId.toString()).to.equal("3");
+
     // Fetch sold market items
     itemResults = await market.fetchMarketItemsByStatus(1);
     expect(itemResults.length).to.equal(1);
     expect(itemResults[0].tokenId.toString()).to.equal("1");
 
+    itemResults = await market.fetchMarketItemsForTokenByStatus(1, 1);
+    expect(itemResults.length).to.equal(1);
+    expect(itemResults[0].tokenId.toString()).to.equal("1");
+
     // Fetch cancelled market items
     itemResults = await market.fetchMarketItemsByStatus(2);
+    expect(itemResults.length).to.equal(1);
+    expect(itemResults[0].tokenId.toString()).to.equal("2");
+
+    itemResults = await market.fetchMarketItemsForTokenByStatus(2, 2);
     expect(itemResults.length).to.equal(1);
     expect(itemResults[0].tokenId.toString()).to.equal("2");
 
@@ -214,7 +226,7 @@ describe("Market", function () {
     expect(item2.status).to.equal(1);
   });
 
-  it("Should fetch most recent market item for token", async function () {
+  it("Should fetch most available market items for token", async function () {
     const listingPriceResult = await market.getListingPrice();
     const listingPrice = listingPriceResult.toString();
     const auctionPrice1 = ethers.utils.parseUnits("100", "ether");
